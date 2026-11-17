@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monedero Digital Multinegocio - Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
+
+  <!-- Barra superior de demostración (Cambiar giro en vivo) -->
+  <div class="bg-slate-900 text-white px-4 py-3 shadow-md">
+    <div class="max-w-md mx-auto flex flex-col gap-2">
+      <div class="flex justify-between items-center">
+        <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Demo en vivo — Elige giro:</span>
+        <button onclick="resetDemo()" class="text-xs text-rose-400 hover:underline">Reiniciar saldos</button>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="cambiarNegocio('carniceria')" id="btn-carniceria" class="py-1.5 px-2 rounded text-xs font-bold bg-red-600 text-white border border-white/30">🥩 Carnicería</button>
+        <button onclick="cambiarNegocio('peluqueria')" id="btn-peluqueria" class="py-1.5 px-2 rounded text-xs font-bold bg-slate-800 text-slate-300">✂️ Peluquería</button>
+        <button onclick="cambiarNegocio('papeleria')" id="btn-papeleria" class="py-1.5 px-2 rounded text-xs font-bold bg-slate-800 text-slate-300">✏️ Papelería</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Switch entre Vista Cliente y Vista Cajero -->
+  <div class="max-w-md mx-auto px-4 mt-4">
+    <div class="bg-white p-1 rounded-xl shadow-sm grid grid-cols-2 border border-slate-200">
+      <button onclick="cambiarVista('cliente')" id="tab-cliente" class="py-2 rounded-lg text-sm font-bold bg-slate-900 text-white transition">📱 Tarjeta del Cliente</button>
+      <button onclick="cambiarVista('cajero')" id="tab-cajero" class="py-2 rounded-lg text-sm font-bold text-slate-600 transition">🏪 Panel de Caja</button>
+    </div>
+  </div>
+
+  <!-- VISTA 1: TARJETA DEL CLIENTE -->
+  <main id="vista-cliente" class="max-w-md mx-auto px-4 mt-5 space-y-5">
+    
+    <!-- Tarjeta Digital -->
+    <div id="card-bg" class="rounded-2xl p-6 text-white shadow-xl transition-all duration-300 bg-gradient-to-br from-red-600 to-red-800 relative overflow-hidden">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-xs uppercase tracking-widest opacity-80">Monedero Electrónico</p>
+          <h1 id="negocio-nombre" class="text-2xl font-extrabold mt-0.5">Carnicería El Buen Corte</h1>
+        </div>
+        <span id="negocio-icono" class="text-3xl bg-white/20 p-2 rounded-xl">🥩</span>
+      </div>
+
+      <div class="mt-6">
+        <p class="text-xs opacity-80">Saldo disponible</p>
+        <div class="flex items-baseline gap-1">
+          <span class="text-4xl font-black tracking-tight" id="cliente-saldo">$0.00</span>
+          <span class="text-xs font-semibold opacity-80">MXN</span>
+        </div>
+        <p id="negocio-regla" class="text-xs mt-1 bg-black/20 inline-block px-2.5 py-1 rounded-full">
+          Acumulas el 5% en cada compra
+        </p>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-white/20 flex justify-between items-end">
+        <div>
+          <p class="text-[11px] opacity-75">Titular de la tarjeta</p>
+          <p class="font-bold text-sm" id="cliente-nombre">Laura Méndez</p>
+          <p class="text-xs opacity-80" id="cliente-tel">722-489-1023</p>
+        </div>
+        <div class="bg-white p-1.5 rounded-lg shadow">
+          <div id="qrcode"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón WhatsApp / Compartir -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div>
+        <p class="text-sm font-bold text-slate-800">Acceso sin descargar apps</p>
+        <p class="text-xs text-slate-500">El cliente consulta su saldo con su número o QR</p>
+      </div>
+      <button onclick="cambiarVista('cajero')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg">
+        Simular compra →
+      </button>
+    </div>
+
+    <!-- Historial de movimientos -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-sm font-bold text-slate-700 mb-3">Últimos movimientos</h2>
+      <ul id="lista-movimientos" class="space-y-2.5 text-sm">
+        <!-- Se llena dinámicamente -->
+      </ul>
+    </div>
+  </main>
+
+  <!-- VISTA 2: PANEL DE CAJA (NEGOCIO) -->
+  <section id="vista-cajero" class="max-w-md mx-auto px-4 mt-5 space-y-4 hidden">
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <div>
+          <span class="text-xs font-bold uppercase text-emerald-600">Modo Cajero Activo</span>
+          <h2 id="cajero-negocio-nombre" class="font-extrabold text-lg">Carnicería El Buen Corte</h2>
+        </div>
+        <span id="cajero-porcentaje" class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-lg">5% Cashback</span>
+      </div>
+
+      <!-- Datos del cliente encontrado -->
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center">
+        <div>
+          <p class="text-xs text-slate-500">Cliente identificado:</p>
+          <p class="font-bold text-sm" id="cajero-cliente-nombre">Laura Méndez (722-489-1023)</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs text-slate-500">Saldo actual</p>
+          <p class="font-black text-emerald-600 text-base" id="cajero-cliente-saldo">$0.00</p>
+        </div>
+      </div>
+
+      <!-- Registrar Nueva Compra (Acumular puntos) -->
+      <div class="space-y-2 pt-1">
+        <label class="block text-xs font-bold text-slate-700 uppercase">1. Abonar puntos por compra ($ MXN)</label>
+        <div class="flex gap-2">
+          <input type="number" id="input-compra" placeholder="Ej. 250" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-slate-900" oninput="calcularPreview()" />
+          <button onclick="registrarCompra()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 rounded-xl text-sm whitespace-nowrap">
+            + Abonar
+          </button>
+        </div>
+        <p id="preview-abono" class="text-xs text-emerald-600 font-semibold h-4"></p>
+      </div>
+
+      <hr class="border-slate-100" />
+
+      <!-- Canjear Saldo -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-700 uppercase">2. Pagar con saldo del monedero ($ MXN)</label>
+        <div class="flex gap-2">
+          <input type="number" id="input-canje" placeholder="Monto a descontar" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-base font-bold focus:outline-none focus:ring-2 focus:ring-amber-500" />
+          <button onclick="canjearSaldo()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 rounded-xl text-sm whitespace-nowrap">
+            Canjear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center">
+      <button onclick="cambiarVista('cliente')" class="text-sm font-bold text-slate-600 underline">
+        ← Volver a ver la tarjeta del cliente actualizada
+      </button>
+    </div>
+  </section>
+
+  <script>
+    const NEGOCIOS = {
+      carniceria: {
+        nombre: "Carnicería El Buen Corte",
+        icono: "🥩",
+        porcentaje: 5,
+        gradiente: "from-red-600 to-red-800",
+        regla: "Acumulas el 5% en cada compra"
+      },
+      peluqueria: {
+        nombre: "Estética & Barbería Estilo",
+        icono: "✂️",
+        porcentaje: 10,
+        gradiente: "from-indigo-600 to-purple-800",
+        regla: "Acumulas el 10% en cada servicio"
+      },
+      papeleria: {
+        nombre: "Papelería El Lápiz Azul",
+        icono: "✏️",
+        porcentaje: 5,
+        gradiente: "from-sky-600 to-blue-800",
+        regla: "Acumulas el 5% en útiles y copias"
+      }
+    };
+
+    let negocioActual = 'carniceria';
+    let datos = JSON.parse(localStorage.getItem('monedero_demo_v1')) || {
+      carniceria: { saldo: 35.50, movs: [{ desc: "Compra de $710.00 (+5%)", monto: "+$35.50", tipo: "abono" }] },
+      peluqueria: { saldo: 40.00, movs: [{ desc: "Corte y barba $400.00 (+10%)", monto: "+$40.00", tipo: "abono" }] },
+      papeleria:  { saldo: 18.00, movs: [{ desc: "Compra útiles $360.00 (+5%)", monto: "+$18.00", tipo: "abono" }] }
+    };
+
+    function guardarDatos() {
+      localStorage.setItem('monedero_demo_v1', JSON.stringify(datos));
+    }
+
+    function renderizar() {
+      const neg = NEGOCIOS[negocioActual];
+      const estado = datos[negocioActual];
+
+      // Actualizar estilos de botones superiores
+      ['carniceria', 'peluqueria', 'papeleria'].forEach(k => {
+        const btn = document.getElementById('btn-' + k);
+        btn.className = k === negocioActual
+          ? "py-1.5 px-2 rounded text-xs font-bold bg-emerald-600 text-white border border-white/40"
+          : "py-1.5 px-2 rounded text-xs font-bold bg-slate-800 text-slate-300";
+      });
+
+      // Tarjeta Cliente
+      const card = document.getElementById('card-bg');
+      card.className = `rounded-2xl p-6 text-white shadow-xl transition-all duration-300 bg-gradient-to-br ${neg.gradiente} relative overflow-hidden`;
+      document.getElementById('negocio-nombre').innerText = neg.nombre;
+      document.getElementById('negocio-icono').innerText = neg.icono;
+      document.getElementById('negocio-regla').innerText = neg.regla;
+      document.getElementById('cliente-saldo').innerText = `$${estado.saldo.toFixed(2)}`;
+
+      // Panel Cajero
+      document.getElementById('cajero-negocio-nombre').innerText = neg.nombre;
+      document.getElementById('cajero-porcentaje').innerText = `${neg.porcentaje}% Cashback`;
+      document.getElementById('cajero-cliente-saldo').innerText = `$${estado.saldo.toFixed(2)}`;
+
+      // QR
+      const qrContainer = document.getElementById('qrcode');
+      qrContainer.innerHTML = "";
+      new QRCode(qrContainer, {
+        text: `CLIENTE-7224891023-${negocioActual.toUpperCase()}`,
+        width: 56,
+        height: 56
+      });
+
+      // Historial
+      const lista = document.getElementById('lista-movimientos');
+      lista.innerHTML = estado.movs.map(m => `
+        <li class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <span class="text-slate-600 text-xs">${m.desc}</span>
+          <span class="font-bold text-xs ${m.tipo === 'abono' ? 'text-emerald-600' : 'text-amber-600'}">${m.monto}</span>
+        </li>
+      `).join('');
+    }
+
+    function cambiarNegocio(tipo) {
+      negocioActual = tipo;
+      document.getElementById('input-compra').value = '';
+      document.getElementById('preview-abono').innerText = '';
+      renderizar();
+    }
+
+    function cambiarVista(vista) {
+      const vCliente = document.getElementById('vista-cliente');
+      const vCajero = document.getElementById('vista-cajero');
+      const tCliente = document.getElementById('tab-cliente');
+      const tCajero = document.getElementById('tab-cajero');
+
+      if (vista === 'cliente') {
+        vCliente.classList.remove('hidden');
+        vCajero.classList.add('hidden');
+        tCliente.className = "py-2 rounded-lg text-sm font-bold bg-slate-900 text-white transition";
+        tCajero.className = "py-2 rounded-lg text-sm font-bold text-slate-600 transition";
+      } else {
+        vCliente.classList.add('hidden');
+        vCajero.classList.remove('hidden');
+        tCajero.className = "py-2 rounded-lg text-sm font-bold bg-slate-900 text-white transition";
+        tCliente.className = "py-2 rounded-lg text-sm font-bold text-slate-600 transition";
+      }
+    }
+
+    function calcularPreview() {
+      const monto = parseFloat(document.getElementById('input-compra').value);
+      const pct = NEGOCIOS[negocioActual].porcentaje;
+      const preview = document.getElementById('preview-abono');
+      if (monto > 0) {
+        const ganado = (monto * pct) / 100;
+        preview.innerText = `El cliente ganará +$${ganado.toFixed(2)} MXN en su monedero`;
+      } else {
+        preview.innerText = '';
+      }
+    }
+
+    function registrarCompra() {
+      const monto = parseFloat(document.getElementById('input-compra').value);
+      if (!monto || monto <= 0) return alert("Ingresa el monto de la compra");
+      const pct = NEGOCIOS[negocioActual].porcentaje;
+      const ganado = (monto * pct) / 100;
+
+      datos[negocioActual].saldo += ganado;
+      datos[negocioActual].movs.unshift({
+        desc: `Compra de $${monto.toFixed(2)} (+${pct}%)`,
+        monto: `+$${ganado.toFixed(2)}`,
+        tipo: "abono"
+      });
+
+      guardarDatos();
+      document.getElementById('input-compra').value = '';
+      document.getElementById('preview-abono').innerText = '';
+      renderizar();
+      alert(`¡Listo! Se abonaron $${ganado.toFixed(2)} al monedero del cliente.`);
+    }
+
+    function canjearSaldo() {
+      const monto = parseFloat(document.getElementById('input-canje').value);
+      const saldoActual = datos[negocioActual].saldo;
+      if (!monto || monto <= 0) return alert("Ingresa el monto a canjear");
+      if (monto > saldoActual) return alert("Saldo insuficiente en el monedero");
+
+      datos[negocioActual].saldo -= monto;
+      datos[negocioActual].movs.unshift({
+        desc: `Canje en caja`,
+        monto: `-$${monto.toFixed(2)}`,
+        tipo: "canje"
+      });
+
+      guardarDatos();
+      document.getElementById('input-canje').value = '';
+      renderizar();
+      alert(`¡Canje exitoso! Nuevo saldo: $${datos[negocioActual].saldo.toFixed(2)}`);
+    }
+
+    function resetDemo() {
+      localStorage.removeItem('monedero_demo_v1');
+      location.reload();
+    }
+
+    renderizar();
+  </script>
+</body>
+</html>
