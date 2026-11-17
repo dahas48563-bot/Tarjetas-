@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monedero Digital Multinegocio - Demo</title>
+  <title>Tarjeta de Recompensas por Porcentaje - Demo</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
-  <!-- Barra superior de demostración (Cambiar giro en vivo) -->
+  <!-- Barra superior de demostración -->
   <div class="bg-slate-900 text-white px-4 py-3 shadow-md">
     <div class="max-w-md mx-auto flex flex-col gap-2">
       <div class="flex justify-between items-center">
         <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Demo en vivo — Elige giro:</span>
-        <button onclick="resetDemo()" class="text-xs text-rose-400 hover:underline">Reiniciar saldos</button>
+        <button onclick="resetDemo()" class="text-xs text-rose-400 hover:underline">Reiniciar progreso</button>
       </div>
       <div class="grid grid-cols-3 gap-2">
-        <button onclick="cambiarNegocio('carniceria')" id="btn-carniceria" class="py-1.5 px-2 rounded text-xs font-bold bg-red-600 text-white border border-white/30">🥩 Carnicería</button>
+        <button onclick="cambiarNegocio('carniceria')" id="btn-carniceria" class="py-1.5 px-2 rounded text-xs font-bold bg-emerald-600 text-white border border-white/30">🥩 Carnicería</button>
         <button onclick="cambiarNegocio('peluqueria')" id="btn-peluqueria" class="py-1.5 px-2 rounded text-xs font-bold bg-slate-800 text-slate-300">✂️ Peluquería</button>
         <button onclick="cambiarNegocio('papeleria')" id="btn-papeleria" class="py-1.5 px-2 rounded text-xs font-bold bg-slate-800 text-slate-300">✏️ Papelería</button>
       </div>
@@ -35,32 +35,42 @@
   <!-- VISTA 1: TARJETA DEL CLIENTE -->
   <main id="vista-cliente" class="max-w-md mx-auto px-4 mt-5 space-y-5">
     
-    <!-- Tarjeta Digital -->
+    <!-- Tarjeta Digital con Barra de Porcentaje -->
     <div id="card-bg" class="rounded-2xl p-6 text-white shadow-xl transition-all duration-300 bg-gradient-to-br from-red-600 to-red-800 relative overflow-hidden">
       <div class="flex justify-between items-start">
         <div>
-          <p class="text-xs uppercase tracking-widest opacity-80">Monedero Electrónico</p>
+          <p class="text-xs uppercase tracking-widest opacity-80">Programa de Recompensas</p>
           <h1 id="negocio-nombre" class="text-2xl font-extrabold mt-0.5">Carnicería El Buen Corte</h1>
         </div>
         <span id="negocio-icono" class="text-3xl bg-white/20 p-2 rounded-xl">🥩</span>
       </div>
 
+      <!-- Progreso en Porcentaje -->
       <div class="mt-6">
-        <p class="text-xs opacity-80">Saldo disponible</p>
-        <div class="flex items-baseline gap-1">
-          <span class="text-4xl font-black tracking-tight" id="cliente-saldo">$0.00</span>
-          <span class="text-xs font-semibold opacity-80">MXN</span>
+        <div class="flex justify-between items-end mb-1.5">
+          <div>
+            <p class="text-xs opacity-85">Tu progreso actual</p>
+            <span class="text-4xl font-black tracking-tight" id="cliente-porcentaje">70%</span>
+          </div>
+          <span id="badge-estado" class="text-xs font-bold bg-black/25 px-3 py-1 rounded-full">
+            ¡Te falta 30%!
+          </span>
         </div>
-        <p id="negocio-regla" class="text-xs mt-1 bg-black/20 inline-block px-2.5 py-1 rounded-full">
-          Acumulas el 5% en cada compra
+
+        <!-- Barra de progreso visual -->
+        <div class="w-full bg-black/30 rounded-full h-4 p-0.5 overflow-hidden">
+          <div id="barra-progreso" class="bg-amber-300 h-full rounded-full transition-all duration-500" style="width: 70%"></div>
+        </div>
+        <p id="negocio-regla" class="text-[11px] mt-2 opacity-90">
+          Cada $100 de compra suma +10% hacia tu premio
         </p>
       </div>
 
       <div class="mt-6 pt-4 border-t border-white/20 flex justify-between items-end">
         <div>
-          <p class="text-[11px] opacity-75">Titular de la tarjeta</p>
-          <p class="font-bold text-sm" id="cliente-nombre">Laura Méndez</p>
-          <p class="text-xs opacity-80" id="cliente-tel">722-489-1023</p>
+          <p class="text-[11px] opacity-75">Cliente frecuente</p>
+          <p class="font-bold text-sm">Laura Méndez</p>
+          <p class="text-xs opacity-80">722-489-1023</p>
         </div>
         <div class="bg-white p-1.5 rounded-lg shadow">
           <div id="qrcode"></div>
@@ -68,23 +78,43 @@
       </div>
     </div>
 
-    <!-- Botón WhatsApp / Compartir -->
+    <!-- MÓDULO DE SELECCIÓN DE PREMIO (Se activa al llegar al 100%) -->
+    <div id="caja-premios" class="bg-amber-50 border-2 border-amber-400 p-4 rounded-2xl shadow-md space-y-3 hidden">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">🎁</span>
+        <div>
+          <h3 class="font-extrabold text-amber-900 text-sm">¡Llegaste al 100%! Elige tu recompensa:</h3>
+          <p class="text-xs text-amber-700">Selecciona una opción para generar tu cupón de canje</p>
+        </div>
+      </div>
+
+      <div id="opciones-premios" class="space-y-2">
+        <!-- Se llena dinámicamente según el giro -->
+      </div>
+    </div>
+
+    <!-- Cupón Activo (Si ya eligió premio) -->
+    <div id="cupon-activo" class="bg-emerald-50 border-2 border-emerald-500 p-4 rounded-2xl shadow-sm hidden">
+      <p class="text-xs font-bold uppercase text-emerald-700">Cupón listo para mostrar en caja:</p>
+      <p id="texto-cupon" class="text-base font-black text-slate-900 mt-1"></p>
+      <p class="text-xs text-slate-500 mt-1">Muéstralo al cajero para que valide tu entrega.</p>
+    </div>
+
+    <!-- Acceso rápido a simular compra -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
       <div>
-        <p class="text-sm font-bold text-slate-800">Acceso sin descargar apps</p>
-        <p class="text-xs text-slate-500">El cliente consulta su saldo con su número o QR</p>
+        <p class="text-sm font-bold text-slate-800">Probar compra en mostrador</p>
+        <p class="text-xs text-slate-500">Suma porcentaje y llega al 100%</p>
       </div>
-      <button onclick="cambiarVista('cajero')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg">
-        Simular compra →
+      <button onclick="cambiarVista('cajero')" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3 py-2 rounded-lg">
+        Ir a Caja →
       </button>
     </div>
 
-    <!-- Historial de movimientos -->
+    <!-- Historial -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-      <h2 class="text-sm font-bold text-slate-700 mb-3">Últimos movimientos</h2>
-      <ul id="lista-movimientos" class="space-y-2.5 text-sm">
-        <!-- Se llena dinámicamente -->
-      </ul>
+      <h2 class="text-sm font-bold text-slate-700 mb-3">Historial de avance</h2>
+      <ul id="lista-movimientos" class="space-y-2.5 text-sm"></ul>
     </div>
   </main>
 
@@ -93,31 +123,31 @@
     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
         <div>
-          <span class="text-xs font-bold uppercase text-emerald-600">Modo Cajero Activo</span>
+          <span class="text-xs font-bold uppercase text-emerald-600">Panel de Caja</span>
           <h2 id="cajero-negocio-nombre" class="font-extrabold text-lg">Carnicería El Buen Corte</h2>
         </div>
-        <span id="cajero-porcentaje" class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-lg">5% Cashback</span>
+        <span id="cajero-regla-badge" class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-lg">$100 = +10%</span>
       </div>
 
-      <!-- Datos del cliente encontrado -->
+      <!-- Estado del cliente -->
       <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center">
         <div>
-          <p class="text-xs text-slate-500">Cliente identificado:</p>
-          <p class="font-bold text-sm" id="cajero-cliente-nombre">Laura Méndez (722-489-1023)</p>
+          <p class="text-xs text-slate-500">Cliente:</p>
+          <p class="font-bold text-sm">Laura Méndez (722-489-1023)</p>
         </div>
         <div class="text-right">
-          <p class="text-xs text-slate-500">Saldo actual</p>
-          <p class="font-black text-emerald-600 text-base" id="cajero-cliente-saldo">$0.00</p>
+          <p class="text-xs text-slate-500">Progreso</p>
+          <p class="font-black text-indigo-600 text-lg" id="cajero-cliente-pct">70%</p>
         </div>
       </div>
 
-      <!-- Registrar Nueva Compra (Acumular puntos) -->
+      <!-- Registrar Compra -->
       <div class="space-y-2 pt-1">
-        <label class="block text-xs font-bold text-slate-700 uppercase">1. Abonar puntos por compra ($ MXN)</label>
+        <label class="block text-xs font-bold text-slate-700 uppercase">1. Registrar monto de compra ($ MXN)</label>
         <div class="flex gap-2">
-          <input type="number" id="input-compra" placeholder="Ej. 250" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-slate-900" oninput="calcularPreview()" />
+          <input type="number" id="input-compra" placeholder="Ej. 300" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-slate-900" oninput="calcularPreview()" />
           <button onclick="registrarCompra()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 rounded-xl text-sm whitespace-nowrap">
-            + Abonar
+            + Sumar %
           </button>
         </div>
         <p id="preview-abono" class="text-xs text-emerald-600 font-semibold h-4"></p>
@@ -125,21 +155,21 @@
 
       <hr class="border-slate-100" />
 
-      <!-- Canjear Saldo -->
+      <!-- Validar Entrega de Premio -->
       <div class="space-y-2">
-        <label class="block text-xs font-bold text-slate-700 uppercase">2. Pagar con saldo del monedero ($ MXN)</label>
-        <div class="flex gap-2">
-          <input type="number" id="input-canje" placeholder="Monto a descontar" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-base font-bold focus:outline-none focus:ring-2 focus:ring-amber-500" />
-          <button onclick="canjearSaldo()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 rounded-xl text-sm whitespace-nowrap">
-            Canjear
-          </button>
+        <label class="block text-xs font-bold text-slate-700 uppercase">2. Entregar Premio Desbloqueado</label>
+        <div id="cajero-info-premio" class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          El cliente aún no llega al 100% o no ha seleccionado su premio.
         </div>
+        <button id="btn-entregar-premio" onclick="entregarPremio()" disabled class="w-full py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-400 cursor-not-allowed transition">
+          Validar entrega y reiniciar a 0%
+        </button>
       </div>
     </div>
 
     <div class="text-center">
       <button onclick="cambiarVista('cliente')" class="text-sm font-bold text-slate-600 underline">
-        ← Volver a ver la tarjeta del cliente actualizada
+        ← Volver a ver la tarjeta del cliente
       </button>
     </div>
   </section>
@@ -149,42 +179,60 @@
       carniceria: {
         nombre: "Carnicería El Buen Corte",
         icono: "🥩",
-        porcentaje: 5,
+        pesosPor10Pct: 100, // Cada $100 = +10%
         gradiente: "from-red-600 to-red-800",
-        regla: "Acumulas el 5% en cada compra"
+        regla: "Cada $100 de compra suma +10% hacia tu recompensa",
+        reglaCorta: "$100 = +10%",
+        premios: [
+          "🥩 1/2 Kg de Bistec o Chorizo gratis",
+          "💵 $50 MXN de descuento en tu compra",
+          "🔥 Paquete de carbón + salsas artesanales"
+        ]
       },
       peluqueria: {
         nombre: "Estética & Barbería Estilo",
         icono: "✂️",
-        porcentaje: 10,
+        pesosPor10Pct: 50, // Cada $50 = +10% (meta $500)
         gradiente: "from-indigo-600 to-purple-800",
-        regla: "Acumulas el 10% en cada servicio"
+        regla: "Cada $50 en servicios suma +10% hacia tu recompensa",
+        reglaCorta: "$50 = +10%",
+        premios: [
+          "✂️ Corte de cabello o arreglo de barba gratis",
+          "🧴 Tratamiento capilar / mascarilla hidratante",
+          "💵 $60 MXN de descuento en cualquier servicio"
+        ]
       },
       papeleria: {
         nombre: "Papelería El Lápiz Azul",
         icono: "✏️",
-        porcentaje: 5,
+        pesosPor10Pct: 40, // Cada $40 = +10% (meta $400)
         gradiente: "from-sky-600 to-blue-800",
-        regla: "Acumulas el 5% en útiles y copias"
+        regla: "Cada $40 de compra suma +10% hacia tu recompensa",
+        reglaCorta: "$40 = +10%",
+        premios: [
+          "📓 1 Libreta profesional o kit de plumas",
+          "🖨️ 30 copias o impresiones a color gratis",
+          "💵 $40 MXN de descuento en útiles escolares"
+        ]
       }
     };
 
     let negocioActual = 'carniceria';
-    let datos = JSON.parse(localStorage.getItem('monedero_demo_v1')) || {
-      carniceria: { saldo: 35.50, movs: [{ desc: "Compra de $710.00 (+5%)", monto: "+$35.50", tipo: "abono" }] },
-      peluqueria: { saldo: 40.00, movs: [{ desc: "Corte y barba $400.00 (+10%)", monto: "+$40.00", tipo: "abono" }] },
-      papeleria:  { saldo: 18.00, movs: [{ desc: "Compra útiles $360.00 (+5%)", monto: "+$18.00", tipo: "abono" }] }
+    let datos = JSON.parse(localStorage.getItem('monedero_pct_v1')) || {
+      carniceria: { pct: 70, premioElegido: null, movs: [{ desc: "Compra de $700.00", extra: "+70%", tipo: "abono" }] },
+      peluqueria: { pct: 80, premioElegido: null, movs: [{ desc: "Corte y tinte $400.00", extra: "+80%", tipo: "abono" }] },
+      papeleria:  { pct: 60, premioElegido: null, movs: [{ desc: "Compra útiles $240.00", extra: "+60%", tipo: "abono" }] }
     };
 
     function guardarDatos() {
-      localStorage.setItem('monedero_demo_v1', JSON.stringify(datos));
+      localStorage.setItem('monedero_pct_v1', JSON.stringify(datos));
     }
 
     function renderizar() {
       const neg = NEGOCIOS[negocioActual];
       const estado = datos[negocioActual];
 
-      // Actualizar estilos de botones superiores
+      // Botones superiores
       ['carniceria', 'peluqueria', 'papeleria'].forEach(k => {
         const btn = document.getElementById('btn-' + k);
         btn.className = k === negocioActual
@@ -193,17 +241,55 @@
       });
 
       // Tarjeta Cliente
-      const card = document.getElementById('card-bg');
-      card.className = `rounded-2xl p-6 text-white shadow-xl transition-all duration-300 bg-gradient-to-br ${neg.gradiente} relative overflow-hidden`;
+      document.getElementById('card-bg').className = `rounded-2xl p-6 text-white shadow-xl transition-all duration-300 bg-gradient-to-br ${neg.gradiente} relative overflow-hidden`;
       document.getElementById('negocio-nombre').innerText = neg.nombre;
       document.getElementById('negocio-icono').innerText = neg.icono;
       document.getElementById('negocio-regla').innerText = neg.regla;
-      document.getElementById('cliente-saldo').innerText = `$${estado.saldo.toFixed(2)}`;
 
-      // Panel Cajero
-      document.getElementById('cajero-negocio-nombre').innerText = neg.nombre;
-      document.getElementById('cajero-porcentaje').innerText = `${neg.porcentaje}% Cashback`;
-      document.getElementById('cajero-cliente-saldo').innerText = `$${estado.saldo.toFixed(2)}`;
+      const pctVisual = Math.min(estado.pct, 100);
+      document.getElementById('cliente-porcentaje').innerText = `${pctVisual}\%`; document.getElementById('barra-progreso').style.width = `${pctVisual}%`;
+
+      const badge = document.getElementById('badge-estado');
+      const cajaPremios = document.getElementById('caja-premios');
+      const cuponActivo = document.getElementById('cupon-activo');
+
+      if (pctVisual >= 100) {
+        badge.innerText = "🎉 ¡100% COMPLETADO!";
+        badge.className = "text-xs font-black bg-amber-400 text-slate-900 px-3 py-1 rounded-full animate-pulse";
+        
+        if (!estado.premioElegido) {
+          cajaPremios.classList.remove('hidden');
+          cuponActivo.classList.add('hidden');
+          document.getElementById('opciones-premios').innerHTML = neg.premios.map((p, idx) => `
+            <button onclick="seleccionarPremio(${idx})" class="w-full text-left bg-white hover:bg-amber-100 border border-amber-300 p-3 rounded-xl text-xs font-bold text-slate-800 flex justify-between items-center transition">
+              <span>${p}</span>
+              <span class="bg-amber-500 text-white px-2 py-1 rounded-lg text-[11px]">Elegir</span>
+            </button>
+          `).join('');
+        } else {
+          cajaPremios.classList.add('hidden');
+          cuponActivo.classList.remove('hidden');
+          document.getElementById('texto-cupon').innerText = estado.premioElegido;
+        }
+      } else {
+        badge.innerText = `¡Te falta ${100 - pctVisual}\%!`; badge.className = "text-xs font-bold bg-black/25 text-white px-3 py-1 rounded-full"; cajaPremios.classList.add('hidden'); cuponActivo.classList.add('hidden'); }  // Panel Cajero document.getElementById('cajero-negocio-nombre').innerText = neg.nombre; document.getElementById('cajero-regla-badge').innerText = neg.reglaCorta; document.getElementById('cajero-cliente-pct').innerText = `${pctVisual}%`;
+
+      const infoPremio = document.getElementById('cajero-info-premio');
+      const btnEntregar = document.getElementById('btn-entregar-premio');
+
+      if (pctVisual >= 100 && estado.premioElegido) {
+        infoPremio.innerHTML = `<span class="font-bold text-emerald-700">Premio seleccionado por el cliente:</span><br/>${estado.premioElegido}`;
+        btnEntregar.disabled = false;
+        btnEntregar.className = "w-full py-2.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer transition";
+      } else if (pctVisual >= 100 && !estado.premioElegido) {
+        infoPremio.innerText = "El cliente ya llegó al 100%. Pídele que elija su premio en su tarjeta.";
+        btnEntregar.disabled = true;
+        btnEntregar.className = "w-full py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-400 cursor-not-allowed";
+      } else {
+        infoPremio.innerText = `Progreso actual: ${pctVisual}%. Disponible al llegar al 100%.`;
+        btnEntregar.disabled = true;
+        btnEntregar.className = "w-full py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-400 cursor-not-allowed";
+      }
 
       // QR
       const qrContainer = document.getElementById('qrcode');
@@ -215,98 +301,7 @@
       });
 
       // Historial
-      const lista = document.getElementById('lista-movimientos');
-      lista.innerHTML = estado.movs.map(m => `
+      document.getElementById('lista-movimientos').innerHTML = estado.movs.map(m => `
         <li class="flex justify-between items-center border-b border-slate-100 pb-2">
           <span class="text-slate-600 text-xs">${m.desc}</span>
-          <span class="font-bold text-xs ${m.tipo === 'abono' ? 'text-emerald-600' : 'text-amber-600'}">${m.monto}</span>
-        </li>
-      `).join('');
-    }
-
-    function cambiarNegocio(tipo) {
-      negocioActual = tipo;
-      document.getElementById('input-compra').value = '';
-      document.getElementById('preview-abono').innerText = '';
-      renderizar();
-    }
-
-    function cambiarVista(vista) {
-      const vCliente = document.getElementById('vista-cliente');
-      const vCajero = document.getElementById('vista-cajero');
-      const tCliente = document.getElementById('tab-cliente');
-      const tCajero = document.getElementById('tab-cajero');
-
-      if (vista === 'cliente') {
-        vCliente.classList.remove('hidden');
-        vCajero.classList.add('hidden');
-        tCliente.className = "py-2 rounded-lg text-sm font-bold bg-slate-900 text-white transition";
-        tCajero.className = "py-2 rounded-lg text-sm font-bold text-slate-600 transition";
-      } else {
-        vCliente.classList.add('hidden');
-        vCajero.classList.remove('hidden');
-        tCajero.className = "py-2 rounded-lg text-sm font-bold bg-slate-900 text-white transition";
-        tCliente.className = "py-2 rounded-lg text-sm font-bold text-slate-600 transition";
-      }
-    }
-
-    function calcularPreview() {
-      const monto = parseFloat(document.getElementById('input-compra').value);
-      const pct = NEGOCIOS[negocioActual].porcentaje;
-      const preview = document.getElementById('preview-abono');
-      if (monto > 0) {
-        const ganado = (monto * pct) / 100;
-        preview.innerText = `El cliente ganará +$${ganado.toFixed(2)} MXN en su monedero`;
-      } else {
-        preview.innerText = '';
-      }
-    }
-
-    function registrarCompra() {
-      const monto = parseFloat(document.getElementById('input-compra').value);
-      if (!monto || monto <= 0) return alert("Ingresa el monto de la compra");
-      const pct = NEGOCIOS[negocioActual].porcentaje;
-      const ganado = (monto * pct) / 100;
-
-      datos[negocioActual].saldo += ganado;
-      datos[negocioActual].movs.unshift({
-        desc: `Compra de $${monto.toFixed(2)} (+${pct}%)`,
-        monto: `+$${ganado.toFixed(2)}`,
-        tipo: "abono"
-      });
-
-      guardarDatos();
-      document.getElementById('input-compra').value = '';
-      document.getElementById('preview-abono').innerText = '';
-      renderizar();
-      alert(`¡Listo! Se abonaron $${ganado.toFixed(2)} al monedero del cliente.`);
-    }
-
-    function canjearSaldo() {
-      const monto = parseFloat(document.getElementById('input-canje').value);
-      const saldoActual = datos[negocioActual].saldo;
-      if (!monto || monto <= 0) return alert("Ingresa el monto a canjear");
-      if (monto > saldoActual) return alert("Saldo insuficiente en el monedero");
-
-      datos[negocioActual].saldo -= monto;
-      datos[negocioActual].movs.unshift({
-        desc: `Canje en caja`,
-        monto: `-$${monto.toFixed(2)}`,
-        tipo: "canje"
-      });
-
-      guardarDatos();
-      document.getElementById('input-canje').value = '';
-      renderizar();
-      alert(`¡Canje exitoso! Nuevo saldo: $${datos[negocioActual].saldo.toFixed(2)}`);
-    }
-
-    function resetDemo() {
-      localStorage.removeItem('monedero_demo_v1');
-      location.reload();
-    }
-
-    renderizar();
-  </script>
-</body>
-</html>
+          <span class="font-bold text-xs ${m.tipo === 'ab
