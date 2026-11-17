@@ -10,16 +10,16 @@
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
   <!-- ========================================================= -->
-  <!-- PANTALLA 0: LOGIN PRINCIPAL (ENTRADA POR ROLES)           -->
+  <!-- PANTALLA 0: LOGIN PRINCIPAL / AUTO-REGISTRO QR            -->
   <!-- ========================================================= -->
   <div id="pantalla-login" class="min-h-screen flex flex-col justify-center px-4 py-8 max-w-md mx-auto">
-    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 space-y-6">
+    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 space-y-5">
       <div class="text-center">
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-900 text-white text-2xl mb-3 shadow">
           💳
         </div>
         <h1 class="text-2xl font-black text-slate-900">Tarjetas & Recompensas</h1>
-        <p class="text-xs text-slate-500 mt-1">Inicia sesión según tu perfil para continuar</p>
+        <p class="text-xs text-slate-500 mt-1">Elige cómo deseas ingresar</p>
       </div>
 
       <!-- Selector de tipo de acceso -->
@@ -29,20 +29,50 @@
         <button onclick="seleccionarTipoLogin('superadmin')" id="login-tab-superadmin" class="py-2 rounded-lg text-xs font-bold text-slate-600 transition">👑 Admin SaaS</button>
       </div>
 
-      <!-- Formulario Cliente (Solo teléfono + negocio) -->
-      <form id="form-login-cliente" onsubmit="ingresarCliente(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Selecciona el negocio</label>
-          <select id="select-negocio-cliente" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold bg-white"></select>
+      <!-- MÓDULO CLIENTE: ENTRAR O REGISTRARSE CON QR -->
+      <div id="form-login-cliente" class="space-y-4">
+        <div class="grid grid-cols-2 gap-2 bg-emerald-50 p-1 rounded-xl border border-emerald-200">
+          <button type="button" onclick="toggleModoCliente('entrar')" id="btn-modo-entrar" class="py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white">Ya tengo tarjeta</button>
+          <button type="button" onclick="toggleModoCliente('registrar')" id="btn-modo-registrar" class="py-1.5 rounded-lg text-xs font-bold text-emerald-800">✨ Soy nuevo (QR)</button>
         </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Tu número de WhatsApp (10 dígitos)</label>
-          <input type="tel" id="input-tel-cliente" value="7224891023" placeholder="Ej. 7224891023" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-bold" />
-        </div>
-        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm shadow transition">
-          Ver mi Tarjeta Digital →
-        </button>
-      </form>
+
+        <!-- Sub-formulario: Ya tengo tarjeta -->
+        <form id="subform-cliente-entrar" onsubmit="ingresarCliente(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Negocio</label>
+            <select id="select-negocio-cliente" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold bg-white"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Tu número de WhatsApp (10 dígitos)</label>
+            <input type="tel" id="input-tel-cliente" value="7224891023" placeholder="Ej. 7224891023" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-bold" />
+          </div>
+          <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-sm shadow transition">
+            Ver mi Tarjeta Digital →
+          </button>
+        </form>
+
+        <!-- Sub-formulario: Auto-registro al escanear QR del mostrador -->
+        <form id="subform-cliente-registrar" onsubmit="registrarNuevoClienteQR(event)" class="space-y-3 hidden">
+          <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-xl text-center">
+            <p class="text-xs font-extrabold text-amber-900">🎁 ¡Regístrate y recibe +10% de bienvenida!</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Negocio donde escaneaste el QR</label>
+            <select id="select-negocio-registro" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold bg-white"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Tu Nombre</label>
+            <input type="text" id="reg-nombre-cliente" placeholder="Ej. Mariana López" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Tu WhatsApp (10 dígitos)</label>
+            <input type="tel" id="reg-tel-cliente" placeholder="Ej. 7225551234" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-bold" />
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm shadow transition">
+            Activar mi Tarjeta Gratis →
+          </button>
+        </form>
+      </div>
 
       <!-- Formulario Dueño de Negocio -->
       <form id="form-login-dueno" onsubmit="ingresarDueno(event)" class="space-y-4 hidden">
@@ -75,7 +105,7 @@
       </form>
 
       <!-- Accesos rápidos para demostración en calle -->
-      <div class="pt-4 border-t border-slate-100">
+      <div class="pt-3 border-t border-slate-100">
         <p class="text-[11px] text-center text-slate-400 font-semibold uppercase tracking-wider mb-2">Accesos directos para Demo en vivo</p>
         <div class="grid grid-cols-3 gap-2">
           <button onclick="accesoRapido('cliente')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold py-2 rounded-lg">Demo Cliente</button>
@@ -87,7 +117,7 @@
   </div>
 
   <!-- ========================================================= -->
-  <!-- BARRA DE SESIÓN ACTIVA (SOLO VISIBLE AL INICIAR SESIÓN)   -->
+  <!-- BARRA DE SESIÓN ACTIVA                                    -->
   <!-- ========================================================= -->
   <header id="barra-sesion" class="bg-slate-900 text-white px-4 py-3 shadow-md hidden">
     <div class="max-w-md mx-auto flex justify-between items-center">
@@ -171,14 +201,15 @@
   </main>
 
   <!-- ========================================================= -->
-  <!-- VISTA B: DUEÑO DEL NEGOCIO (CAJA + ADMIN DE SU LOCAL)     -->
+  <!-- VISTA B: DUEÑO DEL NEGOCIO (CAJA + LETRERO QR + ADMIN)    -->
   <!-- ========================================================= -->
   <section id="vista-dueno" class="max-w-md mx-auto px-4 mt-5 space-y-4 hidden">
     
-    <!-- Switch interno del dueño: Caja vs Reportes -->
-    <div class="bg-white p-1 rounded-xl shadow-sm grid grid-cols-2 border border-slate-200">
-      <button onclick="cambiarSubvistaDueno('caja')" id="subtab-caja" class="py-2 rounded-lg text-xs font-bold bg-slate-900 text-white">🏪 Registrar Compra (Caja)</button>
-      <button onclick="cambiarSubvistaDueno('reportes')" id="subtab-reportes" class="py-2 rounded-lg text-xs font-bold text-slate-600">📊 Mis Clientes y Ventas</button>
+    <!-- Switch interno del dueño: Caja vs Reportes vs Letrero QR -->
+    <div class="bg-white p-1 rounded-xl shadow-sm grid grid-cols-3 gap-1 border border-slate-200">
+      <button onclick="cambiarSubvistaDueno('caja')" id="subtab-caja" class="py-2 rounded-lg text-xs font-bold bg-slate-900 text-white">🏪 Caja</button>
+      <button onclick="cambiarSubvistaDueno('qr')" id="subtab-qr" class="py-2 rounded-lg text-xs font-bold text-slate-600">📲 Letrero QR</button>
+      <button onclick="cambiarSubvistaDueno('reportes')" id="subtab-reportes" class="py-2 rounded-lg text-xs font-bold text-slate-600">📊 Mis Clientes</button>
     </div>
 
     <!-- SUBVISTA B1: CAJA -->
@@ -193,19 +224,19 @@
 
       <!-- Buscador / Selector de cliente en caja -->
       <div>
-        <label class="block text-xs font-bold text-slate-700 mb-1">Cliente en caja (Teléfono o nombre)</label>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Selecciona al cliente en caja</label>
         <select id="dueno-select-cliente" onchange="actualizarClienteEnCaja()" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold bg-slate-50"></select>
       </div>
 
       <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center">
         <div>
-          <p class="text-xs text-slate-500">Progreso actual del cliente:</p>
+          <p class="text-xs text-slate-500">Progreso actual:</p>
           <p class="font-bold text-sm" id="caja-cliente-nombre">Laura Méndez</p>
         </div>
         <p class="font-black text-indigo-600 text-2xl" id="caja-cliente-pct">70%</p>
       </div>
 
-      <!-- Registrar Compra (Solo el dueño/cajero ve esto) -->
+      <!-- Registrar Compra -->
       <div class="space-y-2 pt-1">
         <label class="block text-xs font-bold text-slate-700 uppercase">1. Registrar monto de compra ($ MXN)</label>
         <div class="flex gap-2">
@@ -229,7 +260,26 @@
       </div>
     </div>
 
-    <!-- SUBVISTA B2: REPORTES Y WHATSAPP DEL DUEÑO -->
+    <!-- SUBVISTA B2: LETRERO QR DEL MOSTRADOR (AUTO-REGISTRO) -->
+    <div id="dueno-qr" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center space-y-4 hidden">
+      <span class="text-xs font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">
+        Letrero Oficial del Mostrador
+      </span>
+      <h3 id="qr-negocio-titulo" class="text-xl font-black text-slate-900">Carnicería El Buen Corte</h3>
+      <p class="text-xs text-slate-500">Tus clientes escanean este código con su cámara, ponen su nombre y WhatsApp, y reciben su tarjeta al instante.</p>
+      
+      <div class="inline-block p-4 bg-white border-4 border-slate-900 rounded-2xl shadow-md">
+        <div id="qrcode-mostrador"></div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="simularEscaneoClienteNuevo()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-xs shadow">
+          📲 Simular que un cliente nuevo escanea este QR
+        </button>
+      </div>
+    </div>
+
+    <!-- SUBVISTA B3: REPORTES Y WHATSAPP DEL DUEÑO -->
     <div id="dueno-reportes" class="space-y-4 hidden">
       <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md">
         <p class="text-xs text-emerald-400 font-bold uppercase">Resumen de tu negocio</p>
@@ -250,7 +300,7 @@
       </div>
 
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-        <h3 class="text-sm font-extrabold text-slate-800">Tus Clientes Frecuentes (WhatsApp)</h3>
+        <h3 class="text-sm font-extrabold text-slate-800">Clientes Registrados (Auto-registro QR)</h3>
         <div id="dueno-lista-clientes" class="divide-y divide-slate-100"></div>
       </div>
     </div>
@@ -260,8 +310,6 @@
   <!-- VISTA C: TU PANEL SUPER-ADMIN (CONTROL DE TU SAAS)        -->
   <!-- ========================================================= -->
   <section id="vista-superadmin" class="max-w-md mx-auto px-4 mt-5 space-y-5 hidden">
-    
-    <!-- Tus ingresos y negocios activos -->
     <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-5 rounded-2xl shadow-lg">
       <span class="text-[10px] uppercase tracking-widest bg-indigo-500/40 px-2.5 py-1 rounded-full font-bold">Panel Super-Admin (Tú)</span>
       <h2 class="text-xl font-black mt-2">Control de Negocios Afiliados</h2>
@@ -277,7 +325,7 @@
       </div>
     </div>
 
-    <!-- Dar de alta un negocio nuevo en vivo -->
+    <!-- Dar de alta un negocio nuevo -->
     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
       <h3 class="text-sm font-extrabold text-slate-800">➕ Dar de alta nuevo negocio</h3>
       <form onsubmit="crearNuevoNegocio(event)" class="space-y-2.5">
@@ -289,7 +337,7 @@
         <input type="text" id="nuevo-neg-premio1" placeholder="Premio 1 (Ej. 1 Kg gratis)" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold" />
         <input type="text" id="nuevo-neg-premio2" placeholder="Premio 2 (Ej. $40 de descuento)" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold" />
         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs shadow">
-          Crear Negocio y Generar Acceso
+          Crear Negocio y Generar QR
         </button>
       </form>
     </div>
@@ -299,11 +347,9 @@
       <h3 class="text-sm font-extrabold text-slate-800">Negocios Registrados (Cobros y Estado)</h3>
       <div id="sa-lista-negocios" class="space-y-2.5"></div>
     </div>
-
   </section>
 
   <script>
-    // BASE DE DATOS INICIAL EN LOCALSTORAGE
     const DB_DEFAULT = {
       negocios: {
         carniceria: {
@@ -314,7 +360,6 @@
           pesosPor10Pct: 100,
           gradiente: "from-red-600 to-red-800",
           activo: true,
-          mensualidad: 250,
           ventasTotales: 14850,
           canjesTotales: 9,
           premios: ["🥩 1/2 Kg de Bistec gratis", "💵 $50 MXN de descuento", "🔥 Paquete carbón + salsas"],
@@ -331,7 +376,6 @@
           pesosPor10Pct: 50,
           gradiente: "from-indigo-600 to-purple-800",
           activo: true,
-          mensualidad: 250,
           ventasTotales: 9400,
           canjesTotales: 12,
           premios: ["✂️ Corte de cabello gratis", "🧴 Tratamiento hidratante", "💵 $60 MXN de descuento"],
@@ -347,7 +391,6 @@
           pesosPor10Pct: 40,
           gradiente: "from-sky-600 to-blue-800",
           activo: true,
-          mensualidad: 250,
           ventasTotales: 6200,
           canjesTotales: 7,
           premios: ["📓 1 Libreta profesional gratis", "🖨️ 30 copias a color gratis", "💵 $40 MXN de descuento"],
@@ -358,18 +401,18 @@
       }
     };
 
-    let db = JSON.parse(localStorage.getItem('saas_tarjetas_v1')) || DB_DEFAULT;
-    let sesion = null; // { rol: 'cliente'|'dueno'|'superadmin', negocioId, clienteTel }
+    let db = JSON.parse(localStorage.getItem('saas_tarjetas_qr_v1')) || DB_DEFAULT;
+    let sesion = null;
     let clienteSeleccionadoCajaIdx = 0;
 
     function guardarDB() {
-      localStorage.setItem('saas_tarjetas_v1', JSON.stringify(db));
+      localStorage.setItem('saas_tarjetas_qr_v1', JSON.stringify(db));
     }
 
-    // LÓGICA DE LOGIN
     function poblarSelectNegociosLogin() {
-      const sel = document.getElementById('select-negocio-cliente');
-      sel.innerHTML = Object.values(db.negocios).map(n => `<option value="${n.id}">${n.icono} ${n.nombre}</option>`).join('');
+      const opciones = Object.values(db.negocios).map(n => `<option value="${n.id}">${n.icono} ${n.nombre}</option>`).join('');
+      document.getElementById('select-negocio-cliente').innerHTML = opciones;
+      document.getElementById('select-negocio-registro').innerHTML = opciones;
     }
 
     function seleccionarTipoLogin(tipo) {
@@ -381,6 +424,14 @@
       });
     }
 
+    function toggleModoCliente(modo) {
+      const esEntrar = modo === 'entrar';
+      document.getElementById('subform-cliente-entrar').classList.toggle('hidden', !esEntrar);
+      document.getElementById('subform-cliente-registrar').classList.toggle('hidden', esEntrar);
+      document.getElementById('btn-modo-entrar').className = esEntrar ? "py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white" : "py-1.5 rounded-lg text-xs font-bold text-emerald-800";
+      document.getElementById('btn-modo-registrar').className = !esEntrar ? "py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white" : "py-1.5 rounded-lg text-xs font-bold text-emerald-800";
+    }
+
     function ingresarCliente(e) {
       e.preventDefault();
       const negId = document.getElementById('select-negocio-cliente').value;
@@ -389,9 +440,37 @@
 
       if (!neg.activo) return alert("Este negocio tiene su servicio temporalmente suspendido.");
 
+      const cliente = neg.clientes.find(c => c.tel === tel);
+      if (!cliente) {
+        alert("Aún no estás registrado en este negocio. ¡Regístrate aquí en 5 segundos y recibe +10%!");
+        document.getElementById('select-negocio-registro').value = negId;
+        document.getElementById('reg-tel-cliente').value = tel;
+        toggleModoCliente('registrar');
+        return;
+      }
+
+      sesion = { rol: 'cliente', negocioId: negId, clienteTel: tel };
+      mostrarPantallaPorRol();
+    }
+
+    function registrarNuevoClienteQR(e) {
+      e.preventDefault();
+      const negId = document.getElementById('select-negocio-registro').value;
+      const nombre = document.getElementById('reg-nombre-cliente').value.trim();
+      const tel = document.getElementById('reg-tel-cliente').value.trim();
+      const neg = db.negocios[negId];
+
+      if (!neg.activo) return alert("Este negocio está pausado temporalmente.");
+
       let cliente = neg.clientes.find(c => c.tel === tel);
       if (!cliente) {
-        cliente = { tel, nombre: "Cliente Nuevo (" + tel.slice(-4) + ")", pct: 10, premioElegido: null, movs: [{ desc: "Bono de bienvenida", extra: "+10%", tipo: "abono" }] };
+        cliente = {
+          tel,
+          nombre,
+          pct: 10,
+          premioElegido: null,
+          movs: [{ desc: "Bono de registro con QR", extra: "+10%", tipo: "abono" }]
+        };
         neg.clientes.push(cliente);
         guardarDB();
       }
@@ -400,13 +479,19 @@
       mostrarPantallaPorRol();
     }
 
+    function simularEscaneoClienteNuevo() {
+      const negId = sesion.negocioId;
+      cerrarSesion();
+      seleccionarTipoLogin('cliente');
+      toggleModoCliente('registrar');
+      document.getElementById('select-negocio-registro').value = negId;
+    }
+
     function ingresarDueno(e) {
       e.preventDefault();
       const user = document.getElementById('input-user-dueno').value.trim().toLowerCase();
       const neg = Object.values(db.negocios).find(n => n.usuario.toLowerCase() === user) || db.negocios.carniceria;
-
-      if (!neg.activo) return alert("Tu cuenta está pausada por falta de pago. Contacta al administrador.");
-
+      if (!neg.activo) return alert("Tu cuenta está pausada por falta de pago.");
       sesion = { rol: 'dueno', negocioId: neg.id };
       clienteSeleccionadoCajaIdx = 0;
       mostrarPantallaPorRol();
@@ -472,7 +557,7 @@
       }
     }
 
-    // RENDER VISTA CLIENTE
+    // VISTA CLIENTE
     function renderizarVistaCliente() {
       const neg = db.negocios[sesion.negocioId];
       const cliente = neg.clientes.find(c => c.tel === sesion.clienteTel);
@@ -536,18 +621,32 @@
       renderizarVistaCliente();
     }
 
-    // RENDER VISTA DUEÑO (CAJA + ADMIN LOCAL)
+    // VISTA DUEÑO
     function cambiarSubvistaDueno(sub) {
       document.getElementById('dueno-caja').classList.toggle('hidden', sub !== 'caja');
+      document.getElementById('dueno-qr').classList.toggle('hidden', sub !== 'qr');
       document.getElementById('dueno-reportes').classList.toggle('hidden', sub !== 'reportes');
-      document.getElementById('subtab-caja').className = sub === 'caja' ? "py-2 rounded-lg text-xs font-bold bg-slate-900 text-white" : "py-2 rounded-lg text-xs font-bold text-slate-600";
-      document.getElementById('subtab-reportes').className = sub === 'reportes' ? "py-2 rounded-lg text-xs font-bold bg-slate-900 text-white" : "py-2 rounded-lg text-xs font-bold text-slate-600";
+
+      ['caja', 'qr', 'reportes'].forEach(s => {
+        document.getElementById('subtab-' + s).className = s === sub
+          ? "py-2 rounded-lg text-xs font-bold bg-slate-900 text-white"
+          : "py-2 rounded-lg text-xs font-bold text-slate-600";
+      });
     }
 
     function renderizarVistaDueno() {
       const neg = db.negocios[sesion.negocioId];
       document.getElementById('dueno-negocio-nombre').innerText = neg.nombre;
       document.getElementById('dueno-regla-badge').innerText = `$${neg.pesosPor10Pct} = +10%`;
+      document.getElementById('qr-negocio-titulo').innerText = neg.nombre;
+
+      const qrMostrador = document.getElementById('qrcode-mostrador');
+      qrMostrador.innerHTML = "";
+      new QRCode(qrMostrador, {
+        text: `${window.location.origin}${window.location.pathname}?registro=${neg.id}`,
+        width: 150,
+        height: 150
+      });
 
       const sel = document.getElementById('dueno-select-cliente');
       sel.innerHTML = neg.clientes.map((c, idx) => `<option value="${idx}">${c.nombre} (${c.tel})</option>`).join('');
@@ -555,7 +654,6 @@
 
       actualizarClienteEnCaja();
 
-      // Reportes
       document.getElementById('dueno-stat-clientes').innerText = neg.clientes.length;
       document.getElementById('dueno-stat-ventas').innerText = `$${neg.ventasTotales.toLocaleString('es-MX')}`;
       document.getElementById('dueno-stat-canjes').innerText = neg.canjesTotales;
@@ -643,7 +741,7 @@
       alert("¡Premio entregado y barra reiniciada a 0%!");
     }
 
-    // RENDER SUPER-ADMIN (TU PANEL)
+    // SUPER ADMIN
     function renderizarSuperAdmin() {
       const lista = Object.values(db.negocios);
       const activos = lista.filter(n => n.activo);
@@ -654,7 +752,7 @@
         <div class="p-3 rounded-xl border ${n.activo ? 'border-slate-200 bg-slate-50' : 'border-rose-200 bg-rose-50'} flex justify-between items-center">
           <div>
             <p class="text-xs font-extrabold text-slate-800">${n.icono} ${n.nombre}</p>
-            <p class="text-[11px] text-slate-500">Acceso: ${n.usuario} • $${n.pesosPor10Pct} = 10%</p>
+            <p class="text-[11px] text-slate-500">Acceso: ${n.usuario} • ${n.clientes.length} clientes</p>
           </div>
           <button onclick="toggleEstadoNegocio('${n.id}')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold ${n.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-600 text-white'}">
             ${n.activo ? '● Activo' : 'Pausado'}
@@ -682,19 +780,18 @@
         pesosPor10Pct: base,
         gradiente: "from-emerald-600 to-teal-800",
         activo: true,
-        mensualidad: 250,
         ventasTotales: 0,
         canjesTotales: 0,
         premios: [p1, p2],
         clientes: [
-          { tel: "7224891023", nombre: "Cliente Prueba", pct: 20, premioElegido: null, movs: [{ desc: "Registro inicial", extra: "+20%", tipo: "abono" }] }
+          { tel: "7224891023", nombre: "Laura Méndez", pct: 20, premioElegido: null, movs: [{ desc: "Bono de bienvenida", extra: "+20%", tipo: "abono" }] }
         ]
       };
 
       guardarDB();
       e.target.reset();
       renderizarSuperAdmin();
-      alert(`¡Negocio creado!\nUsuario para el dueño: ${slugUser}\nYa aparece disponible para clientes y dueños.`);
+      alert(`¡Negocio creado!\nUsuario para el dueño: ${slugUser}\nYa tiene su Letrero QR listo.`);
     }
 
     function toggleEstadoNegocio(id) {
@@ -703,7 +800,15 @@
       renderizarSuperAdmin();
     }
 
+    // DETECTAR SI ENTRÓ DESDE UN QR (?registro=carniceria)
     poblarSelectNegociosLogin();
+    const params = new URLSearchParams(window.location.search);
+    const regNegocio = params.get('registro');
+    if (regNegocio && db.negocios[regNegocio]) {
+      seleccionarTipoLogin('cliente');
+      toggleModoCliente('registrar');
+      document.getElementById('select-negocio-registro').value = regNegocio;
+    }
   </script>
 </body>
 </html>
