@@ -3,77 +3,140 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tarjeta de Recompensas por Porcentaje - Demo Completa</title>
+  <title>LoyaltyPro - Plataforma Multinegocio</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-12">
 
-  <!-- Barra superior de demostración -->
-  <div class="bg-slate-900 text-white px-4 py-3 shadow-md">
-    <div class="max-w-md mx-auto flex flex-col gap-2">
-      <div class="flex justify-between items-center">
-        <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Demo en vivo — Elige giro:</span>
-        <button onclick="resetDemo()" class="text-xs text-rose-400 hover:underline">Reiniciar demo</button>
+  <!-- ========================================================= -->
+  <!-- PANTALLA 0: LOGIN PRINCIPAL (ENTRADA POR ROLES)           -->
+  <!-- ========================================================= -->
+  <div id="pantalla-login" class="min-h-screen flex flex-col justify-center px-4 py-8 max-w-md mx-auto">
+    <div class="bg-white rounded-3xl shadow-xl border border-slate-200 p-6 space-y-6">
+      <div class="text-center">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-900 text-white text-2xl mb-3 shadow">
+          💳
+        </div>
+        <h1 class="text-2xl font-black text-slate-900">Tarjetas & Recompensas</h1>
+        <p class="text-xs text-slate-500 mt-1">Inicia sesión según tu perfil para continuar</p>
       </div>
-      <div class="grid grid-cols-3 gap-2">
-        <button onclick="cambiarNegocio('carniceria')" id="btn-carniceria" class="py-1.5 px-2 rounded text-xs font-bold bg-emerald-600 text-white border border-white/30">🥩 Carnicería</button>
-        <button onclick="cambiarNegocio('peluqueria')" id="btn-peluqueria" class="py-1.5 px-2 rounded text-xs font-bold bg-slate-800 text-slate-300">✂️ Peluquería</button>
-        <button onclick="cambiarNegocio('papeleria')" id="btn-papeleria" class="py-1.5 px-2 rounded text-xs font-bold bg-slate-800 text-slate-300">✏️ Papelería</button>
+
+      <!-- Selector de tipo de acceso -->
+      <div class="grid grid-cols-3 gap-1.5 bg-slate-100 p-1 rounded-xl">
+        <button onclick="seleccionarTipoLogin('cliente')" id="login-tab-cliente" class="py-2 rounded-lg text-xs font-bold bg-slate-900 text-white transition">📱 Soy Cliente</button>
+        <button onclick="seleccionarTipoLogin('dueno')" id="login-tab-dueno" class="py-2 rounded-lg text-xs font-bold text-slate-600 transition">🏪 Soy Negocio</button>
+        <button onclick="seleccionarTipoLogin('superadmin')" id="login-tab-superadmin" class="py-2 rounded-lg text-xs font-bold text-slate-600 transition">👑 Admin SaaS</button>
+      </div>
+
+      <!-- Formulario Cliente (Solo teléfono + negocio) -->
+      <form id="form-login-cliente" onsubmit="ingresarCliente(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Selecciona el negocio</label>
+          <select id="select-negocio-cliente" class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold bg-white"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Tu número de WhatsApp (10 dígitos)</label>
+          <input type="tel" id="input-tel-cliente" value="7224891023" placeholder="Ej. 7224891023" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-bold" />
+        </div>
+        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm shadow transition">
+          Ver mi Tarjeta Digital →
+        </button>
+      </form>
+
+      <!-- Formulario Dueño de Negocio -->
+      <form id="form-login-dueno" onsubmit="ingresarDueno(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Usuario del Negocio</label>
+          <input type="text" id="input-user-dueno" value="carniceria@negocio.com" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Contraseña</label>
+          <input type="password" id="input-pass-dueno" value="123456" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold" />
+        </div>
+        <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-sm shadow transition">
+          Entrar a Panel de Caja y Control →
+        </button>
+      </form>
+
+      <!-- Formulario Super-Admin (Tú) -->
+      <form id="form-login-superadmin" onsubmit="ingresarSuperAdmin(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Correo Administrador Principal</label>
+          <input type="email" id="input-user-admin" value="admin@misistema.com" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Contraseña Maestra</label>
+          <input type="password" id="input-pass-admin" value="admin123" required class="w-full border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-semibold" />
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm shadow transition">
+          Entrar a mi Panel Super-Admin →
+        </button>
+      </form>
+
+      <!-- Accesos rápidos para demostración en calle -->
+      <div class="pt-4 border-t border-slate-100">
+        <p class="text-[11px] text-center text-slate-400 font-semibold uppercase tracking-wider mb-2">Accesos directos para Demo en vivo</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="accesoRapido('cliente')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold py-2 rounded-lg">Demo Cliente</button>
+          <button onclick="accesoRapido('dueno')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold py-2 rounded-lg">Demo Dueño</button>
+          <button onclick="accesoRapido('superadmin')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-bold py-2 rounded-lg">Mi Panel SaaS</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Switch de 3 Vistas: Cliente, Caja y Admin Dueño -->
-  <div class="max-w-md mx-auto px-4 mt-4">
-    <div class="bg-white p-1 rounded-xl shadow-sm grid grid-cols-3 gap-1 border border-slate-200">
-      <button onclick="cambiarVista('cliente')" id="tab-cliente" class="py-2 px-1 rounded-lg text-xs font-bold bg-slate-900 text-white transition">📱 Cliente</button>
-      <button onclick="cambiarVista('cajero')" id="tab-cajero" class="py-2 px-1 rounded-lg text-xs font-bold text-slate-600 transition">🏪 Caja</button>
-      <button onclick="cambiarVista('admin')" id="tab-admin" class="py-2 px-1 rounded-lg text-xs font-bold text-slate-600 transition">📊 Admin Dueño</button>
+  <!-- ========================================================= -->
+  <!-- BARRA DE SESIÓN ACTIVA (SOLO VISIBLE AL INICIAR SESIÓN)   -->
+  <!-- ========================================================= -->
+  <header id="barra-sesion" class="bg-slate-900 text-white px-4 py-3 shadow-md hidden">
+    <div class="max-w-md mx-auto flex justify-between items-center">
+      <div>
+        <span id="sesion-rol-badge" class="text-[10px] uppercase tracking-wider bg-emerald-600 px-2 py-0.5 rounded font-bold">Rol</span>
+        <p id="sesion-usuario-titulo" class="text-xs font-bold text-slate-200 mt-0.5">Usuario</p>
+      </div>
+      <button onclick="cerrarSesion()" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg font-bold text-rose-300">
+        Cerrar sesión ↪
+      </button>
     </div>
-  </div>
+  </header>
 
-  <!-- ========================================== -->
-  <!-- VISTA 1: TARJETA DEL CLIENTE               -->
-  <!-- ========================================== -->
-  <main id="vista-cliente" class="max-w-md mx-auto px-4 mt-5 space-y-5">
+  <!-- ========================================================= -->
+  <!-- VISTA A: SOLO CLIENTE (ÚNICAMENTE SU TARJETA E HISTORIAL) -->
+  <!-- ========================================================= -->
+  <main id="vista-cliente" class="max-w-md mx-auto px-4 mt-5 space-y-5 hidden">
     
-    <!-- Tarjeta Digital con Barra de Porcentaje -->
-    <div id="card-bg" class="rounded-2xl p-6 text-white shadow-xl transition-all duration-300 bg-gradient-to-br from-red-600 to-red-800 relative overflow-hidden">
+    <div id="card-bg" class="rounded-2xl p-6 text-white shadow-xl bg-gradient-to-br from-red-600 to-red-800 relative overflow-hidden">
       <div class="flex justify-between items-start">
         <div>
-          <p class="text-xs uppercase tracking-widest opacity-80">Programa de Recompensas</p>
-          <h1 id="negocio-nombre" class="text-2xl font-extrabold mt-0.5">Carnicería El Buen Corte</h1>
+          <p class="text-xs uppercase tracking-widest opacity-80">Tarjeta Digital</p>
+          <h1 id="cliente-negocio-nombre" class="text-2xl font-extrabold mt-0.5">Negocio</h1>
         </div>
-        <span id="negocio-icono" class="text-3xl bg-white/20 p-2 rounded-xl">🥩</span>
+        <span id="cliente-negocio-icono" class="text-3xl bg-white/20 p-2 rounded-xl">🥩</span>
       </div>
 
-      <!-- Progreso en Porcentaje -->
       <div class="mt-6">
         <div class="flex justify-between items-end mb-1.5">
           <div>
-            <p class="text-xs opacity-85">Tu progreso actual</p>
-            <span class="text-4xl font-black tracking-tight" id="cliente-porcentaje">70%</span>
+            <p class="text-xs opacity-85">Tu porcentaje acumulado</p>
+            <span class="text-4xl font-black tracking-tight" id="cliente-porcentaje">0%</span>
           </div>
           <span id="badge-estado" class="text-xs font-bold bg-black/25 px-3 py-1 rounded-full">
-            ¡Te falta 30%!
+            ¡Te falta 100%!
           </span>
         </div>
 
-        <!-- Barra de progreso visual -->
         <div class="w-full bg-black/30 rounded-full h-4 p-0.5 overflow-hidden">
-          <div id="barra-progreso" class="bg-amber-300 h-full rounded-full transition-all duration-500" style="width: 70%"></div>
+          <div id="barra-progreso" class="bg-amber-300 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
-        <p id="negocio-regla" class="text-[11px] mt-2 opacity-90">
-          Cada $100 de compra suma +10% hacia tu recompensa
-        </p>
+        <p id="cliente-negocio-regla" class="text-[11px] mt-2 opacity-90"></p>
       </div>
 
       <div class="mt-6 pt-4 border-t border-white/20 flex justify-between items-end">
         <div>
-          <p class="text-[11px] opacity-75">Cliente frecuente</p>
-          <p class="font-bold text-sm">Laura Méndez</p>
-          <p class="text-xs opacity-80">722-489-1023</p>
+          <p class="text-[11px] opacity-75">Titular</p>
+          <p class="font-bold text-sm" id="cliente-nombre-titular">Laura Méndez</p>
+          <p class="text-xs opacity-80" id="cliente-tel-titular">7224891023</p>
         </div>
         <div class="bg-white p-1.5 rounded-lg shadow">
           <div id="qrcode"></div>
@@ -81,13 +144,13 @@
       </div>
     </div>
 
-    <!-- MÓDULO DE SELECCIÓN DE PREMIO (Al llegar al 100%) -->
+    <!-- Selector de Premio (Solo aparece al 100%) -->
     <div id="caja-premios" class="bg-amber-50 border-2 border-amber-400 p-4 rounded-2xl shadow-md space-y-3 hidden">
       <div class="flex items-center gap-2">
         <span class="text-2xl">🎁</span>
         <div>
-          <h3 class="font-extrabold text-amber-900 text-sm">¡Llegaste al 100%! Elige tu recompensa:</h3>
-          <p class="text-xs text-amber-700">Selecciona una opción para generar tu cupón de canje</p>
+          <h3 class="font-extrabold text-amber-900 text-sm">¡Llegaste al 100%! Elige tu premio:</h3>
+          <p class="text-xs text-amber-700">Selecciona uno para mostrar tu cupón en caja</p>
         </div>
       </div>
       <div id="opciones-premios" class="space-y-2"></div>
@@ -95,55 +158,54 @@
 
     <!-- Cupón Activo -->
     <div id="cupon-activo" class="bg-emerald-50 border-2 border-emerald-500 p-4 rounded-2xl shadow-sm hidden">
-      <p class="text-xs font-bold uppercase text-emerald-700">Cupón listo para mostrar en caja:</p>
+      <p class="text-xs font-bold uppercase text-emerald-700">Cupón activo para canjear en mostrador:</p>
       <p id="texto-cupon" class="text-base font-black text-slate-900 mt-1"></p>
-      <p class="text-xs text-slate-500 mt-1">Muéstralo al cajero para que valide tu entrega.</p>
+      <p class="text-xs text-slate-500 mt-1">Muéstralo al encargado en caja para recibirlo.</p>
     </div>
 
-    <!-- Acceso rápido a simular compra -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
-      <div>
-        <p class="text-sm font-bold text-slate-800">Probar compra en mostrador</p>
-        <p class="text-xs text-slate-500">Suma porcentaje y llega al 100%</p>
-      </div>
-      <button onclick="cambiarVista('cajero')" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3 py-2 rounded-lg">
-        Ir a Caja →
-      </button>
-    </div>
-
-    <!-- Historial del Cliente -->
+    <!-- Historial exclusivo del cliente -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-      <h2 class="text-sm font-bold text-slate-700 mb-3">Tu historial de avance</h2>
-      <ul id="lista-movimientos" class="space-y-2.5 text-sm"></ul>
+      <h2 class="text-sm font-bold text-slate-700 mb-3">Tu historial de compras y premios</h2>
+      <ul id="lista-movimientos-cliente" class="space-y-2.5 text-sm"></ul>
     </div>
   </main>
 
-  <!-- ========================================== -->
-  <!-- VISTA 2: PANEL DE CAJA (OPERACIÓN)         -->
-  <!-- ========================================== -->
-  <section id="vista-cajero" class="max-w-md mx-auto px-4 mt-5 space-y-4 hidden">
-    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+  <!-- ========================================================= -->
+  <!-- VISTA B: DUEÑO DEL NEGOCIO (CAJA + ADMIN DE SU LOCAL)     -->
+  <!-- ========================================================= -->
+  <section id="vista-dueno" class="max-w-md mx-auto px-4 mt-5 space-y-4 hidden">
+    
+    <!-- Switch interno del dueño: Caja vs Reportes -->
+    <div class="bg-white p-1 rounded-xl shadow-sm grid grid-cols-2 border border-slate-200">
+      <button onclick="cambiarSubvistaDueno('caja')" id="subtab-caja" class="py-2 rounded-lg text-xs font-bold bg-slate-900 text-white">🏪 Registrar Compra (Caja)</button>
+      <button onclick="cambiarSubvistaDueno('reportes')" id="subtab-reportes" class="py-2 rounded-lg text-xs font-bold text-slate-600">📊 Mis Clientes y Ventas</button>
+    </div>
+
+    <!-- SUBVISTA B1: CAJA -->
+    <div id="dueno-caja" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
         <div>
-          <span class="text-xs font-bold uppercase text-emerald-600">Operación en Mostrador</span>
-          <h2 id="cajero-negocio-nombre" class="font-extrabold text-lg">Carnicería El Buen Corte</h2>
+          <span class="text-xs font-bold uppercase text-emerald-600">Mostrador Activo</span>
+          <h2 id="dueno-negocio-nombre" class="font-extrabold text-lg">Negocio</h2>
         </div>
-        <span id="cajero-regla-badge" class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-lg">$100 = +10%</span>
+        <span id="dueno-regla-badge" class="bg-slate-100 text-slate-800 text-xs font-bold px-2.5 py-1 rounded-lg">$100 = +10%</span>
       </div>
 
-      <!-- Estado del cliente -->
+      <!-- Buscador / Selector de cliente en caja -->
+      <div>
+        <label class="block text-xs font-bold text-slate-700 mb-1">Cliente en caja (Teléfono o nombre)</label>
+        <select id="dueno-select-cliente" onchange="actualizarClienteEnCaja()" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold bg-slate-50"></select>
+      </div>
+
       <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center">
         <div>
-          <p class="text-xs text-slate-500">Cliente identificado:</p>
-          <p class="font-bold text-sm">Laura Méndez (722-489-1023)</p>
+          <p class="text-xs text-slate-500">Progreso actual del cliente:</p>
+          <p class="font-bold text-sm" id="caja-cliente-nombre">Laura Méndez</p>
         </div>
-        <div class="text-right">
-          <p class="text-xs text-slate-500">Progreso</p>
-          <p class="font-black text-indigo-600 text-lg" id="cajero-cliente-pct">70%</p>
-        </div>
+        <p class="font-black text-indigo-600 text-2xl" id="caja-cliente-pct">70%</p>
       </div>
 
-      <!-- Registrar Compra -->
+      <!-- Registrar Compra (Solo el dueño/cajero ve esto) -->
       <div class="space-y-2 pt-1">
         <label class="block text-xs font-bold text-slate-700 uppercase">1. Registrar monto de compra ($ MXN)</label>
         <div class="flex gap-2">
@@ -159,182 +221,270 @@
 
       <!-- Validar Entrega de Premio -->
       <div class="space-y-2">
-        <label class="block text-xs font-bold text-slate-700 uppercase">2. Entregar Premio Desbloqueado</label>
-        <div id="cajero-info-premio" class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200">
-          El cliente aún no llega al 100% o no ha seleccionado su premio.
-        </div>
+        <label class="block text-xs font-bold text-slate-700 uppercase">2. Validar Entrega de Premio</label>
+        <div id="cajero-info-premio" class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200"></div>
         <button id="btn-entregar-premio" onclick="entregarPremio()" disabled class="w-full py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-400 cursor-not-allowed transition">
-          Validar entrega y reiniciar a 0%
+          Entregar premio y reiniciar a 0%
         </button>
       </div>
     </div>
 
-    <div class="text-center">
-      <button onclick="cambiarVista('cliente')" class="text-sm font-bold text-slate-600 underline">
-        ← Volver a ver la tarjeta del cliente
-      </button>
+    <!-- SUBVISTA B2: REPORTES Y WHATSAPP DEL DUEÑO -->
+    <div id="dueno-reportes" class="space-y-4 hidden">
+      <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md">
+        <p class="text-xs text-emerald-400 font-bold uppercase">Resumen de tu negocio</p>
+        <div class="grid grid-cols-3 gap-2 mt-3 text-center">
+          <div class="bg-white/10 p-2.5 rounded-xl">
+            <p class="text-[11px] text-slate-300">Clientes</p>
+            <p id="dueno-stat-clientes" class="text-xl font-black">0</p>
+          </div>
+          <div class="bg-white/10 p-2.5 rounded-xl">
+            <p class="text-[11px] text-slate-300">Ventas</p>
+            <p id="dueno-stat-ventas" class="text-lg font-black text-emerald-400">$0</p>
+          </div>
+          <div class="bg-white/10 p-2.5 rounded-xl">
+            <p class="text-[11px] text-slate-300">Canjes</p>
+            <p id="dueno-stat-canjes" class="text-xl font-black text-amber-300">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <h3 class="text-sm font-extrabold text-slate-800">Tus Clientes Frecuentes (WhatsApp)</h3>
+        <div id="dueno-lista-clientes" class="divide-y divide-slate-100"></div>
+      </div>
     </div>
   </section>
 
-  <!-- ========================================== -->
-  <!-- VISTA 3: PANEL ADMINISTRATIVO (DUEÑO)      -->
-  <!-- ========================================== -->
-  <section id="vista-admin" class="max-w-md mx-auto px-4 mt-5 space-y-4 hidden">
+  <!-- ========================================================= -->
+  <!-- VISTA C: TU PANEL SUPER-ADMIN (CONTROL DE TU SAAS)        -->
+  <!-- ========================================================= -->
+  <section id="vista-superadmin" class="max-w-md mx-auto px-4 mt-5 space-y-5 hidden">
     
-    <!-- Encabezado Admin -->
-    <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md">
-      <div class="flex justify-between items-center">
-        <div>
-          <span class="text-[11px] uppercase tracking-wider text-emerald-400 font-bold">Control Total del Dueño</span>
-          <h2 id="admin-negocio-nombre" class="text-lg font-extrabold mt-0.5">Carnicería El Buen Corte</h2>
+    <!-- Tus ingresos y negocios activos -->
+    <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-5 rounded-2xl shadow-lg">
+      <span class="text-[10px] uppercase tracking-widest bg-indigo-500/40 px-2.5 py-1 rounded-full font-bold">Panel Super-Admin (Tú)</span>
+      <h2 class="text-xl font-black mt-2">Control de Negocios Afiliados</h2>
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <div class="bg-white/10 p-3 rounded-xl">
+          <p class="text-xs text-slate-300">Negocios Activos</p>
+          <p id="sa-total-negocios" class="text-2xl font-black text-white mt-0.5">3</p>
         </div>
-        <span class="text-2xl">📊</span>
-      </div>
-
-      <!-- Métricas clave -->
-      <div class="grid grid-cols-3 gap-2 mt-4 text-center">
-        <div class="bg-white/10 p-2.5 rounded-xl">
-          <p class="text-[11px] text-slate-300">Clientes</p>
-          <p class="text-xl font-black text-white mt-0.5">48</p>
-        </div>
-        <div class="bg-white/10 p-2.5 rounded-xl">
-          <p class="text-[11px] text-slate-300">Ventas Tarjeta</p>
-          <p id="admin-ventas-totales" class="text-lg font-black text-emerald-400 mt-0.5">$14,850</p>
-        </div>
-        <div class="bg-white/10 p-2.5 rounded-xl">
-          <p class="text-[11px] text-slate-300">Canjes</p>
-          <p id="admin-total-canjes" class="text-xl font-black text-amber-300 mt-0.5">9</p>
+        <div class="bg-white/10 p-3 rounded-xl">
+          <p class="text-xs text-slate-300">Ingreso Mensual Est.</p>
+          <p id="sa-ingreso-mensual" class="text-2xl font-black text-emerald-400 mt-0.5">$750</p>
         </div>
       </div>
     </div>
 
-    <!-- Base de Datos de Clientes + Envío directo WhatsApp -->
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-      <div class="flex justify-between items-center">
-        <div>
-          <h3 class="text-sm font-extrabold text-slate-800">Base de Datos de Clientes</h3>
-          <p class="text-xs text-slate-500">Envía promociones directas a su WhatsApp en 1 clic</p>
+    <!-- Dar de alta un negocio nuevo en vivo -->
+    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+      <h3 class="text-sm font-extrabold text-slate-800">➕ Dar de alta nuevo negocio</h3>
+      <form onsubmit="crearNuevoNegocio(event)" class="space-y-2.5">
+        <input type="text" id="nuevo-neg-nombre" placeholder="Nombre (Ej. Tortillería La Palma)" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold" />
+        <div class="grid grid-cols-2 gap-2">
+          <input type="text" id="nuevo-neg-icono" placeholder="Emoji (Ej. 🌮)" value="🏪" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold" />
+          <input type="number" id="nuevo-neg-base" placeholder="$ para +10% (Ej. 100)" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold" />
         </div>
-      </div>
-
-      <div id="admin-lista-clientes" class="divide-y divide-slate-100">
-        <!-- Se llena dinámicamente -->
-      </div>
+        <input type="text" id="nuevo-neg-premio1" placeholder="Premio 1 (Ej. 1 Kg gratis)" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold" />
+        <input type="text" id="nuevo-neg-premio2" placeholder="Premio 2 (Ej. $40 de descuento)" required class="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold" />
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs shadow">
+          Crear Negocio y Generar Acceso
+        </button>
+      </form>
     </div>
 
-    <!-- Bitácora de Auditoría -->
+    <!-- Lista de negocios y control de suscripción -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-      <div>
-        <h3 class="text-sm font-extrabold text-slate-800">Bitácora de Movimientos (Auditoría)</h3>
-        <p class="text-xs text-slate-500">Registro de quién abonó o canjeó en caja</p>
-      </div>
-      <ul id="admin-bitacora" class="space-y-2 text-xs">
-        <!-- Se llena dinámicamente -->
-      </ul>
+      <h3 class="text-sm font-extrabold text-slate-800">Negocios Registrados (Cobros y Estado)</h3>
+      <div id="sa-lista-negocios" class="space-y-2.5"></div>
     </div>
 
   </section>
 
   <script>
-    const NEGOCIOS = {
-      carniceria: {
-        nombre: "Carnicería El Buen Corte",
-        icono: "🥩",
-        pesosPor10Pct: 100,
-        gradiente: "from-red-600 to-red-800",
-        regla: "Cada $100 de compra suma +10% hacia tu recompensa",
-        reglaCorta: "$100 = +10%",
-        promoWhatsapp: "¡Hola! En Carnicería El Buen Corte hoy tenemos promoción especial en arrachera y bistec. ¡Ven a sumar puntos en tu tarjeta!",
-        premios: [
-          "🥩 1/2 Kg de Bistec o Chorizo gratis",
-          "💵 $50 MXN de descuento en tu compra",
-          "🔥 Paquete de carbón + salsas artesanales"
-        ]
-      },
-      peluqueria: {
-        nombre: "Estética & Barbería Estilo",
-        icono: "✂️",
-        pesosPor10Pct: 50,
-        gradiente: "from-indigo-600 to-purple-800",
-        regla: "Cada $50 en servicios suma +10% hacia tu recompensa",
-        reglaCorta: "$50 = +10%",
-        promoWhatsapp: "¡Hola! En Estética & Barbería Estilo tenemos 2x1 en corte y barba esta semana. ¡Aprovecha y suma porcentaje en tu tarjeta!",
-        premios: [
-          "✂️ Corte de cabello o arreglo de barba gratis",
-          "🧴 Tratamiento capilar / mascarilla hidratante",
-          "💵 $60 MXN de descuento en cualquier servicio"
-        ]
-      },
-      papeleria: {
-        nombre: "Papelería El Lápiz Azul",
-        icono: "✏️",
-        pesosPor10Pct: 40,
-        gradiente: "from-sky-600 to-blue-800",
-        regla: "Cada $40 de compra suma +10% hacia tu recompensa",
-        reglaCorta: "$40 = +10%",
-        promoWhatsapp: "¡Hola! En Papelería El Lápiz Azul ya llegaron nuevos cuadernos y útiles con descuento. ¡Te esperamos para sumar puntos!",
-        premios: [
-          "📓 1 Libreta profesional o kit de plumas",
-          "🖨️ 30 copias o impresiones a color gratis",
-          "💵 $40 MXN de descuento en útiles escolares"
-        ]
+    // BASE DE DATOS INICIAL EN LOCALSTORAGE
+    const DB_DEFAULT = {
+      negocios: {
+        carniceria: {
+          id: "carniceria",
+          nombre: "Carnicería El Buen Corte",
+          icono: "🥩",
+          usuario: "carniceria@negocio.com",
+          pesosPor10Pct: 100,
+          gradiente: "from-red-600 to-red-800",
+          activo: true,
+          mensualidad: 250,
+          ventasTotales: 14850,
+          canjesTotales: 9,
+          premios: ["🥩 1/2 Kg de Bistec gratis", "💵 $50 MXN de descuento", "🔥 Paquete carbón + salsas"],
+          clientes: [
+            { tel: "7224891023", nombre: "Laura Méndez", pct: 70, premioElegido: null, movs: [{ desc: "Compra de $700.00", extra: "+70%", tipo: "abono" }] },
+            { tel: "7223108841", nombre: "Carlos Ramírez", pct: 90, premioElegido: null, movs: [{ desc: "Compra de $900.00", extra: "+90%", tipo: "abono" }] }
+          ]
+        },
+        peluqueria: {
+          id: "peluqueria",
+          nombre: "Estética & Barbería Estilo",
+          icono: "✂️",
+          usuario: "estetica@negocio.com",
+          pesosPor10Pct: 50,
+          gradiente: "from-indigo-600 to-purple-800",
+          activo: true,
+          mensualidad: 250,
+          ventasTotales: 9400,
+          canjesTotales: 12,
+          premios: ["✂️ Corte de cabello gratis", "🧴 Tratamiento hidratante", "💵 $60 MXN de descuento"],
+          clientes: [
+            { tel: "7224891023", nombre: "Laura Méndez", pct: 80, premioElegido: null, movs: [{ desc: "Corte y tinte $400.00", extra: "+80%", tipo: "abono" }] }
+          ]
+        },
+        papeleria: {
+          id: "papeleria",
+          nombre: "Papelería El Lápiz Azul",
+          icono: "✏️",
+          usuario: "papeleria@negocio.com",
+          pesosPor10Pct: 40,
+          gradiente: "from-sky-600 to-blue-800",
+          activo: true,
+          mensualidad: 250,
+          ventasTotales: 6200,
+          canjesTotales: 7,
+          premios: ["📓 1 Libreta profesional gratis", "🖨️ 30 copias a color gratis", "💵 $40 MXN de descuento"],
+          clientes: [
+            { tel: "7224891023", nombre: "Laura Méndez", pct: 60, premioElegido: null, movs: [{ desc: "Compra útiles $240.00", extra: "+60%", tipo: "abono" }] }
+          ]
+        }
       }
     };
 
-    const CLIENTES_EXTRA = [
-      { nombre: "Carlos Ramírez", tel: "722-310-8841", pct: 90 },
-      { nombre: "Sofía Hernández", tel: "722-615-2094", pct: 40 },
-      { nombre: "Miguel Ángel Torres", tel: "722-198-4430", pct: 100 }
-    ];
+    let db = JSON.parse(localStorage.getItem('saas_tarjetas_v1')) || DB_DEFAULT;
+    let sesion = null; // { rol: 'cliente'|'dueno'|'superadmin', negocioId, clienteTel }
+    let clienteSeleccionadoCajaIdx = 0;
 
-    let negocioActual = 'carniceria';
-    let datos = JSON.parse(localStorage.getItem('monedero_pct_v2')) || {
-      carniceria: {
-        pct: 70,
-        premioElegido: null,
-        ventasTotales: 14850,
-        canjesTotales: 9,
-        movs: [{ desc: "Compra de $700.00", extra: "+70%", tipo: "abono", cajero: "Caja 1 (Hoy 11:20 AM)" }]
-      },
-      peluqueria: {
-        pct: 80,
-        premioElegido: null,
-        ventasTotales: 9400,
-        canjesTotales: 12,
-        movs: [{ desc: "Corte y tinte $400.00", extra: "+80%", tipo: "abono", cajero: "Recepción (Hoy 01:15 PM)" }]
-      },
-      papeleria: {
-        pct: 60,
-        premioElegido: null,
-        ventasTotales: 6200,
-        canjesTotales: 7,
-        movs: [{ desc: "Compra útiles $240.00", extra: "+60%", tipo: "abono", cajero: "Mostrador (Ayer 05:40 PM)" }]
-      }
-    };
-
-    function guardarDatos() {
-      localStorage.setItem('monedero_pct_v2', JSON.stringify(datos));
+    function guardarDB() {
+      localStorage.setItem('saas_tarjetas_v1', JSON.stringify(db));
     }
 
-    function renderizar() {
-      const neg = NEGOCIOS[negocioActual];
-      const estado = datos[negocioActual];
+    // LÓGICA DE LOGIN
+    function poblarSelectNegociosLogin() {
+      const sel = document.getElementById('select-negocio-cliente');
+      sel.innerHTML = Object.values(db.negocios).map(n => `<option value="${n.id}">${n.icono} ${n.nombre}</option>`).join('');
+    }
 
-      // Botones superiores
-      ['carniceria', 'peluqueria', 'papeleria'].forEach(k => {
-        const btn = document.getElementById('btn-' + k);
-        btn.className = k === negocioActual
-          ? "py-1.5 px-2 rounded text-xs font-bold bg-emerald-600 text-white border border-white/40"
-          : "py-1.5 px-2 rounded text-xs font-bold bg-slate-800 text-slate-300";
+    function seleccionarTipoLogin(tipo) {
+      ['cliente', 'dueno', 'superadmin'].forEach(t => {
+        document.getElementById('login-tab-' + t).className = t === tipo
+          ? "py-2 rounded-lg text-xs font-bold bg-slate-900 text-white transition"
+          : "py-2 rounded-lg text-xs font-bold text-slate-600 transition";
+        document.getElementById('form-login-' + t).classList.toggle('hidden', t !== tipo);
       });
+    }
 
-      // Tarjeta Cliente
-      document.getElementById('card-bg').className = `rounded-2xl p-6 text-white shadow-xl transition-all duration-300 bg-gradient-to-br ${neg.gradiente} relative overflow-hidden`;
-      document.getElementById('negocio-nombre').innerText = neg.nombre;
-      document.getElementById('negocio-icono').innerText = neg.icono;
-      document.getElementById('negocio-regla').innerText = neg.regla;
+    function ingresarCliente(e) {
+      e.preventDefault();
+      const negId = document.getElementById('select-negocio-cliente').value;
+      const tel = document.getElementById('input-tel-cliente').value.trim();
+      const neg = db.negocios[negId];
 
-      const pctVisual = Math.min(estado.pct, 100);
+      if (!neg.activo) return alert("Este negocio tiene su servicio temporalmente suspendido.");
+
+      let cliente = neg.clientes.find(c => c.tel === tel);
+      if (!cliente) {
+        cliente = { tel, nombre: "Cliente Nuevo (" + tel.slice(-4) + ")", pct: 10, premioElegido: null, movs: [{ desc: "Bono de bienvenida", extra: "+10%", tipo: "abono" }] };
+        neg.clientes.push(cliente);
+        guardarDB();
+      }
+
+      sesion = { rol: 'cliente', negocioId: negId, clienteTel: tel };
+      mostrarPantallaPorRol();
+    }
+
+    function ingresarDueno(e) {
+      e.preventDefault();
+      const user = document.getElementById('input-user-dueno').value.trim().toLowerCase();
+      const neg = Object.values(db.negocios).find(n => n.usuario.toLowerCase() === user) || db.negocios.carniceria;
+
+      if (!neg.activo) return alert("Tu cuenta está pausada por falta de pago. Contacta al administrador.");
+
+      sesion = { rol: 'dueno', negocioId: neg.id };
+      clienteSeleccionadoCajaIdx = 0;
+      mostrarPantallaPorRol();
+    }
+
+    function ingresarSuperAdmin(e) {
+      e.preventDefault();
+      sesion = { rol: 'superadmin' };
+      mostrarPantallaPorRol();
+    }
+
+    function accesoRapido(rol) {
+      if (rol === 'cliente') {
+        sesion = { rol: 'cliente', negocioId: 'carniceria', clienteTel: '7224891023' };
+      } else if (rol === 'dueno') {
+        sesion = { rol: 'dueno', negocioId: 'carniceria' };
+        clienteSeleccionadoCajaIdx = 0;
+      } else {
+        sesion = { rol: 'superadmin' };
+      }
+      mostrarPantallaPorRol();
+    }
+
+    function cerrarSesion() {
+      sesion = null;
+      document.getElementById('pantalla-login').classList.remove('hidden');
+      document.getElementById('barra-sesion').classList.add('hidden');
+      document.getElementById('vista-cliente').classList.add('hidden');
+      document.getElementById('vista-dueno').classList.add('hidden');
+      document.getElementById('vista-superadmin').classList.add('hidden');
+      poblarSelectNegociosLogin();
+    }
+
+    function mostrarPantallaPorRol() {
+      document.getElementById('pantalla-login').classList.add('hidden');
+      document.getElementById('barra-sesion').classList.remove('hidden');
+      document.getElementById('vista-cliente').classList.add('hidden');
+      document.getElementById('vista-dueno').classList.add('hidden');
+      document.getElementById('vista-superadmin').classList.add('hidden');
+
+      const badge = document.getElementById('sesion-rol-badge');
+      const titulo = document.getElementById('sesion-usuario-titulo');
+
+      if (sesion.rol === 'cliente') {
+        badge.innerText = "Sesión Cliente";
+        badge.className = "text-[10px] uppercase tracking-wider bg-emerald-600 px-2 py-0.5 rounded font-bold";
+        titulo.innerText = `WhatsApp: ${sesion.clienteTel}`;
+        document.getElementById('vista-cliente').classList.remove('hidden');
+        renderizarVistaCliente();
+      } else if (sesion.rol === 'dueno') {
+        const neg = db.negocios[sesion.negocioId];
+        badge.innerText = "Sesión Dueño / Caja";
+        badge.className = "text-[10px] uppercase tracking-wider bg-amber-600 px-2 py-0.5 rounded font-bold";
+        titulo.innerText = neg.nombre;
+        document.getElementById('vista-dueno').classList.remove('hidden');
+        renderizarVistaDueno();
+      } else if (sesion.rol === 'superadmin') {
+        badge.innerText = "Super-Admin SaaS";
+        badge.className = "text-[10px] uppercase tracking-wider bg-indigo-600 px-2 py-0.5 rounded font-bold";
+        titulo.innerText = "Panel Principal de Proveedora";
+        document.getElementById('vista-superadmin').classList.remove('hidden');
+        renderizarSuperAdmin();
+      }
+    }
+
+    // RENDER VISTA CLIENTE
+    function renderizarVistaCliente() {
+      const neg = db.negocios[sesion.negocioId];
+      const cliente = neg.clientes.find(c => c.tel === sesion.clienteTel);
+
+      document.getElementById('card-bg').className = `rounded-2xl p-6 text-white shadow-xl bg-gradient-to-br ${neg.gradiente} relative overflow-hidden`;
+      document.getElementById('cliente-negocio-nombre').innerText = neg.nombre;
+      document.getElementById('cliente-negocio-icono').innerText = neg.icono;
+      document.getElementById('cliente-negocio-regla').innerText = `Cada $${neg.pesosPor10Pct} de compra suma +10% hacia tu premio`;
+      document.getElementById('cliente-nombre-titular').innerText = cliente.nombre;
+      document.getElementById('cliente-tel-titular').innerText = cliente.tel;
+
+      const pctVisual = Math.min(cliente.pct, 100);
       document.getElementById('cliente-porcentaje').innerText = `${pctVisual}%`;
       document.getElementById('barra-progreso').style.width = `${pctVisual}%`;
 
@@ -345,12 +495,11 @@
       if (pctVisual >= 100) {
         badge.innerText = "🎉 ¡100% COMPLETADO!";
         badge.className = "text-xs font-black bg-amber-400 text-slate-900 px-3 py-1 rounded-full animate-pulse";
-        
-        if (!estado.premioElegido) {
+        if (!cliente.premioElegido) {
           cajaPremios.classList.remove('hidden');
           cuponActivo.classList.add('hidden');
           document.getElementById('opciones-premios').innerHTML = neg.premios.map((p, idx) => `
-            <button onclick="seleccionarPremio(${idx})" class="w-full text-left bg-white hover:bg-amber-100 border border-amber-300 p-3 rounded-xl text-xs font-bold text-slate-800 flex justify-between items-center transition">
+            <button onclick="seleccionarPremioCliente(${idx})" class="w-full text-left bg-white hover:bg-amber-100 border border-amber-300 p-3 rounded-xl text-xs font-bold text-slate-800 flex justify-between items-center">
               <span>${p}</span>
               <span class="bg-amber-500 text-white px-2 py-1 rounded-lg text-[11px]">Elegir</span>
             </button>
@@ -358,7 +507,7 @@
         } else {
           cajaPremios.classList.add('hidden');
           cuponActivo.classList.remove('hidden');
-          document.getElementById('texto-cupon').innerText = estado.premioElegido;
+          document.getElementById('texto-cupon').innerText = cliente.premioElegido;
         }
       } else {
         badge.innerText = `¡Te falta ${100 - pctVisual}%!`;
@@ -367,75 +516,11 @@
         cuponActivo.classList.add('hidden');
       }
 
-      // Panel Cajero
-      document.getElementById('cajero-negocio-nombre').innerText = neg.nombre;
-      document.getElementById('cajero-regla-badge').innerText = neg.reglaCorta;
-      document.getElementById('cajero-cliente-pct').innerText = `${pctVisual}%`;
-
-      const infoPremio = document.getElementById('cajero-info-premio');
-      const btnEntregar = document.getElementById('btn-entregar-premio');
-
-      if (pctVisual >= 100 && estado.premioElegido) {
-        infoPremio.innerHTML = `<span class="font-bold text-emerald-700">Premio seleccionado por el cliente:</span><br/>${estado.premioElegido}`;
-        btnEntregar.disabled = false;
-        btnEntregar.className = "w-full py-2.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer transition";
-      } else if (pctVisual >= 100 && !estado.premioElegido) {
-        infoPremio.innerText = "El cliente ya llegó al 100%. Pídele que elija su premio en su tarjeta.";
-        btnEntregar.disabled = true;
-        btnEntregar.className = "w-full py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-400 cursor-not-allowed";
-      } else {
-        infoPremio.innerText = `Progreso actual: ${pctVisual}%. Disponible al llegar al 100%.`;
-        btnEntregar.disabled = true;
-        btnEntregar.className = "w-full py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-400 cursor-not-allowed";
-      }
-
-      // Panel Admin Dueño
-      document.getElementById('admin-negocio-nombre').innerText = neg.nombre;
-      document.getElementById('admin-ventas-totales').innerText = `$${estado.ventasTotales.toLocaleString('es-MX')}`;
-      document.getElementById('admin-total-canjes').innerText = estado.canjesTotales;
-
-      const todosClientes = [
-        { nombre: "Laura Méndez", tel: "722-489-1023", pct: pctVisual },
-        ...CLIENTES_EXTRA
-      ];
-
-      document.getElementById('admin-lista-clientes').innerHTML = todosClientes.map(c => {
-        const telLimpio = c.tel.replace(/-/g, '');
-        const urlWa = `https://wa.me/52${telLimpio}?text=${encodeURIComponent(neg.promoWhatsapp)}`;
-        return `
-          <div class="py-2.5 flex justify-between items-center">
-            <div>
-              <p class="text-xs font-bold text-slate-800">${c.nombre}</p>
-              <p class="text-[11px] text-slate-500">${c.tel} • <span class="font-semibold text-indigo-600">${c.pct}% acumulado</span></p>
-            </div>
-            <a href="${urlWa}" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1">
-              💬 WhatsApp
-            </a>
-          </div>
-        `;
-      }).join('');
-
-      document.getElementById('admin-bitacora').innerHTML = estado.movs.map(m => `
-        <li class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 flex justify-between items-center">
-          <div>
-            <p class="font-bold text-slate-700">${m.desc}</p>
-            <p class="text-[10px] text-slate-400">Laura Méndez • ${m.cajero || 'Caja Principal'}</p>
-          </div>
-          <span class="font-bold ${m.tipo === 'abono' ? 'text-emerald-600' : 'text-amber-600'}">${m.extra}</span>
-        </li>
-      `).join('');
-
-      // QR
       const qrContainer = document.getElementById('qrcode');
       qrContainer.innerHTML = "";
-      new QRCode(qrContainer, {
-        text: `CLIENTE-7224891023-${negocioActual.toUpperCase()}`,
-        width: 56,
-        height: 56
-      });
+      new QRCode(qrContainer, { text: `${neg.id}-${cliente.tel}`, width: 56, height: 56 });
 
-      // Historial Cliente
-      document.getElementById('lista-movimientos').innerHTML = estado.movs.map(m => `
+      document.getElementById('lista-movimientos-cliente').innerHTML = cliente.movs.map(m => `
         <li class="flex justify-between items-center border-b border-slate-100 pb-2">
           <span class="text-slate-600 text-xs">${m.desc}</span>
           <span class="font-bold text-xs ${m.tipo === 'abono' ? 'text-emerald-600' : 'text-amber-600'}">${m.extra}</span>
@@ -443,102 +528,182 @@
       `).join('');
     }
 
-    function cambiarNegocio(tipo) {
-      negocioActual = tipo;
-      document.getElementById('input-compra').value = '';
-      document.getElementById('preview-abono').innerText = '';
-      renderizar();
+    function seleccionarPremioCliente(idx) {
+      const neg = db.negocios[sesion.negocioId];
+      const cliente = neg.clientes.find(c => c.tel === sesion.clienteTel);
+      cliente.premioElegido = neg.premios[idx];
+      guardarDB();
+      renderizarVistaCliente();
     }
 
-    function cambiarVista(vista) {
-      const vistas = ['cliente', 'cajero', 'admin'];
-      vistas.forEach(v => {
-        const el = document.getElementById('vista-' + v);
-        const tab = document.getElementById('tab-' + v);
-        if (v === vista) {
-          el.classList.remove('hidden');
-          tab.className = "py-2 px-1 rounded-lg text-xs font-bold bg-slate-900 text-white transition";
-        } else {
-          el.classList.add('hidden');
-          tab.className = "py-2 px-1 rounded-lg text-xs font-bold text-slate-600 transition";
-        }
-      });
+    // RENDER VISTA DUEÑO (CAJA + ADMIN LOCAL)
+    function cambiarSubvistaDueno(sub) {
+      document.getElementById('dueno-caja').classList.toggle('hidden', sub !== 'caja');
+      document.getElementById('dueno-reportes').classList.toggle('hidden', sub !== 'reportes');
+      document.getElementById('subtab-caja').className = sub === 'caja' ? "py-2 rounded-lg text-xs font-bold bg-slate-900 text-white" : "py-2 rounded-lg text-xs font-bold text-slate-600";
+      document.getElementById('subtab-reportes').className = sub === 'reportes' ? "py-2 rounded-lg text-xs font-bold bg-slate-900 text-white" : "py-2 rounded-lg text-xs font-bold text-slate-600";
+    }
+
+    function renderizarVistaDueno() {
+      const neg = db.negocios[sesion.negocioId];
+      document.getElementById('dueno-negocio-nombre').innerText = neg.nombre;
+      document.getElementById('dueno-regla-badge').innerText = `$${neg.pesosPor10Pct} = +10%`;
+
+      const sel = document.getElementById('dueno-select-cliente');
+      sel.innerHTML = neg.clientes.map((c, idx) => `<option value="${idx}">${c.nombre} (${c.tel})</option>`).join('');
+      sel.value = clienteSeleccionadoCajaIdx;
+
+      actualizarClienteEnCaja();
+
+      // Reportes
+      document.getElementById('dueno-stat-clientes').innerText = neg.clientes.length;
+      document.getElementById('dueno-stat-ventas').innerText = `$${neg.ventasTotales.toLocaleString('es-MX')}`;
+      document.getElementById('dueno-stat-canjes').innerText = neg.canjesTotales;
+
+      document.getElementById('dueno-lista-clientes').innerHTML = neg.clientes.map(c => {
+        const msg = `¡Hola ${c.nombre}! En ${neg.nombre} ya llevas ${c.pct}% acumulado en tu tarjeta. ¡Ven hoy a completar tu premio!`;
+        const urlWa = `https://wa.me/52${c.tel}?text=${encodeURIComponent(msg)}`;
+        return `
+          <div class="py-2.5 flex justify-between items-center">
+            <div>
+              <p class="text-xs font-bold text-slate-800">${c.nombre}</p>
+              <p class="text-[11px] text-slate-500">${c.tel} • <span class="text-indigo-600 font-bold">${c.pct}%</span></p>
+            </div>
+            <a href="${urlWa}" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg">💬 WhatsApp</a>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function actualizarClienteEnCaja() {
+      const neg = db.negocios[sesion.negocioId];
+      clienteSeleccionadoCajaIdx = parseInt(document.getElementById('dueno-select-cliente').value) || 0;
+      const cliente = neg.clientes[clienteSeleccionadoCajaIdx];
+
+      document.getElementById('caja-cliente-nombre').innerText = cliente.nombre;
+      document.getElementById('caja-cliente-pct').innerText = `${cliente.pct}%`;
+
+      const infoPremio = document.getElementById('cajero-info-premio');
+      const btnEntregar = document.getElementById('btn-entregar-premio');
+
+      if (cliente.pct >= 100 && cliente.premioElegido) {
+        infoPremio.innerHTML = `<span class="font-bold text-emerald-700">Premio elegido por el cliente:</span><br/>${cliente.premioElegido}`;
+        btnEntregar.disabled = false;
+        btnEntregar.className = "w-full py-2.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer";
+      } else if (cliente.pct >= 100) {
+        infoPremio.innerText = "El cliente llegó al 100%. Pídele que elija su premio desde su celular.";
+        btnEntregar.disabled = true;
+        btnEntregar.className = "w-full py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-400 cursor-not-allowed";
+      } else {
+        infoPremio.innerText = `Progreso actual: ${cliente.pct}%. Disponible al llegar al 100%.`;
+        btnEntregar.disabled = true;
+        btnEntregar.className = "w-full py-2.5 rounded-xl font-bold text-sm bg-slate-200 text-slate-400 cursor-not-allowed";
+      }
     }
 
     function calcularPreview() {
+      const neg = db.negocios[sesion.negocioId];
       const monto = parseFloat(document.getElementById('input-compra').value);
-      const base = NEGOCIOS[negocioActual].pesosPor10Pct;
       const preview = document.getElementById('preview-abono');
       if (monto > 0) {
-        const pctGanado = Math.round((monto / base) * 10);
-        preview.innerText = `Esta compra suma +${pctGanado}% a su barra de premio`;
+        const pct = Math.round((monto / neg.pesosPor10Pct) * 10);
+        preview.innerText = `Esta compra suma +${pct}% al cliente`;
       } else {
         preview.innerText = '';
       }
     }
 
     function registrarCompra() {
+      const neg = db.negocios[sesion.negocioId];
+      const cliente = neg.clientes[clienteSeleccionadoCajaIdx];
       const monto = parseFloat(document.getElementById('input-compra').value);
       if (!monto || monto <= 0) return alert("Ingresa el monto de la compra");
-      const base = NEGOCIOS[negocioActual].pesosPor10Pct;
-      const pctGanado = Math.round((monto / base) * 10);
 
-      const ahora = new Date();
-      const hora = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const pctGanado = Math.round((monto / neg.pesosPor10Pct) * 10);
+      cliente.pct = Math.min(cliente.pct + pctGanado, 100);
+      neg.ventasTotales += monto;
+      cliente.movs.unshift({ desc: `Compra de $${monto.toFixed(2)}`, extra: `+${pctGanado}%`, tipo: "abono" });
 
-      datos[negocioActual].pct = Math.min(datos[negocioActual].pct + pctGanado, 100);
-      datos[negocioActual].ventasTotales += monto;
-      datos[negocioActual].movs.unshift({
-        desc: `Compra de $${monto.toFixed(2)}`,
-        extra: `+${pctGanado}%`,
-        tipo: "abono",
-        cajero: `Caja Principal (Hoy ${hora})`
-      });
-
-      guardarDatos();
+      guardarDB();
       document.getElementById('input-compra').value = '';
       document.getElementById('preview-abono').innerText = '';
-      renderizar();
-      
-      if (datos[negocioActual].pct >= 100) {
-        alert("🎉 ¡El cliente llegó al 100%! Ya puede elegir su premio en su tarjeta.");
-      } else {
-        alert(`¡Listo! Se sumó +${pctGanado}% al progreso del cliente.`);
-      }
-    }
-
-    function seleccionarPremio(idx) {
-      const premio = NEGOCIOS[negocioActual].premios[idx];
-      datos[negocioActual].premioElegido = premio;
-      guardarDatos();
-      renderizar();
+      renderizarVistaDueno();
+      alert(`¡Compra registrada! Se sumó +${pctGanado}% a ${cliente.nombre}.`);
     }
 
     function entregarPremio() {
-      const premio = datos[negocioActual].premioElegido;
-      const ahora = new Date();
-      const hora = ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      datos[negocioActual].movs.unshift({
-        desc: `Canje: ${premio}`,
-        extra: "100% Canjeado",
-        tipo: "canje",
-        cajero: `Caja Principal (Hoy ${hora})`
-      });
-      datos[negocioActual].pct = 0;
-      datos[negocioActual].premioElegido = null;
-      datos[negocioActual].canjesTotales += 1;
-      guardarDatos();
-      renderizar();
-      alert("¡Premio entregado! La barra del cliente se reinició a 0% para que vuelva a juntar.");
+      const neg = db.negocios[sesion.negocioId];
+      const cliente = neg.clientes[clienteSeleccionadoCajaIdx];
+      cliente.movs.unshift({ desc: `Canje: ${cliente.premioElegido}`, extra: "100% Canjeado", tipo: "canje" });
+      cliente.pct = 0;
+      cliente.premioElegido = null;
+      neg.canjesTotales += 1;
+      guardarDB();
+      renderizarVistaDueno();
+      alert("¡Premio entregado y barra reiniciada a 0%!");
     }
 
-    function resetDemo() {
-      localStorage.removeItem('monedero_pct_v2');
-      location.reload();
+    // RENDER SUPER-ADMIN (TU PANEL)
+    function renderizarSuperAdmin() {
+      const lista = Object.values(db.negocios);
+      const activos = lista.filter(n => n.activo);
+      document.getElementById('sa-total-negocios').innerText = activos.length;
+      document.getElementById('sa-ingreso-mensual').innerText = `$${(activos.length * 250).toLocaleString('es-MX')}`;
+
+      document.getElementById('sa-lista-negocios').innerHTML = lista.map(n => `
+        <div class="p-3 rounded-xl border ${n.activo ? 'border-slate-200 bg-slate-50' : 'border-rose-200 bg-rose-50'} flex justify-between items-center">
+          <div>
+            <p class="text-xs font-extrabold text-slate-800">${n.icono} ${n.nombre}</p>
+            <p class="text-[11px] text-slate-500">Acceso: ${n.usuario} • $${n.pesosPor10Pct} = 10%</p>
+          </div>
+          <button onclick="toggleEstadoNegocio('${n.id}')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold ${n.activo ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-600 text-white'}">
+            ${n.activo ? '● Activo' : 'Pausado'}
+          </button>
+        </div>
+      `).join('');
     }
 
-    renderizar();
+    function crearNuevoNegocio(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('nuevo-neg-nombre').value.trim();
+      const icono = document.getElementById('nuevo-neg-icono').value.trim();
+      const base = parseInt(document.getElementById('nuevo-neg-base').value);
+      const p1 = document.getElementById('nuevo-neg-premio1').value.trim();
+      const p2 = document.getElementById('nuevo-neg-premio2').value.trim();
+
+      const id = 'neg_' + Date.now();
+      const slugUser = nombre.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10) + '@negocio.com';
+
+      db.negocios[id] = {
+        id,
+        nombre,
+        icono,
+        usuario: slugUser,
+        pesosPor10Pct: base,
+        gradiente: "from-emerald-600 to-teal-800",
+        activo: true,
+        mensualidad: 250,
+        ventasTotales: 0,
+        canjesTotales: 0,
+        premios: [p1, p2],
+        clientes: [
+          { tel: "7224891023", nombre: "Cliente Prueba", pct: 20, premioElegido: null, movs: [{ desc: "Registro inicial", extra: "+20%", tipo: "abono" }] }
+        ]
+      };
+
+      guardarDB();
+      e.target.reset();
+      renderizarSuperAdmin();
+      alert(`¡Negocio creado!\nUsuario para el dueño: ${slugUser}\nYa aparece disponible para clientes y dueños.`);
+    }
+
+    function toggleEstadoNegocio(id) {
+      db.negocios[id].activo = !db.negocios[id].activo;
+      guardarDB();
+      renderizarSuperAdmin();
+    }
+
+    poblarSelectNegociosLogin();
   </script>
 </body>
 </html>
